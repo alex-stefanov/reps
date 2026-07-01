@@ -25,6 +25,9 @@ async function createDb(): Promise<Db> {
 
   const dataDir =
     process.env.PGLITE_DATA_DIR ?? path.join(process.cwd(), ".pglite", "data");
+  // PGlite won't create parent directories itself.
+  const { mkdirSync } = await import("node:fs");
+  mkdirSync(dataDir, { recursive: true });
   const client = new PGlite(dataDir);
   const db = drizzle(client, { schema });
   // Keep the embedded dev DB schema current without a manual migrate step.
@@ -39,6 +42,10 @@ async function createDb(): Promise<Db> {
 const globalForDb = globalThis as unknown as { __repsDb?: Promise<Db> };
 
 export function getDb(): Promise<Db> {
-  globalForDb.__repsDb ??= createDb();
+  globalForDb.__repsDb ??= createDb().catch((err) => {
+    // Don't cache a failed connection attempt forever.
+    globalForDb.__repsDb = undefined;
+    throw err;
+  });
   return globalForDb.__repsDb;
 }
