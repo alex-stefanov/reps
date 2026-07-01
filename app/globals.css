@@ -1,0 +1,81 @@
+@import "tailwindcss";
+
+/*
+ * Reps — "night-shift arcade terminal"
+ * Dark-only. One accent: desaturated phosphor green (CRT / GitHub-grid green).
+ * Track colors are data encoding (per the sketch: BYOX purple, LeetCode amber,
+ * LinkedIn blue), kept muted so the phosphor accent stays the hero.
+ */
+
+@theme {
+  /* Surfaces — off-black charcoal with a faint green cast, never #000 */
+  --color-ink: #0b0f0c;
+  --color-panel: #10150f;
+  --color-raised: #161c14;
+  --color-line: #232b20;
+  --color-line-bright: #37432f;
+
+  /* Text */
+  --color-fg: #d9e4d2;
+  --color-dim: #8b9a82;
+  --color-faint: #566150;
+
+  /* The one accent — phosphor green */
+  --color-phos: #55c06a;
+  --color-phos-bright: #7ade8c;
+  --color-phos-dim: #2e7a41;
+
+  /* Contribution grid levels (0 → 4) */
+  --color-cell-0: #151a12;
+  --color-cell-1: #1e3421;
+  --color-cell-2: #2a5230;
+  --color-cell-3: #3c8a4c;
+  --color-cell-4: #62d178;
+
+  /* Track colors — muted, for row/blob coding only */
+  --color-track-byox: #a48bd4;
+  --color-track-project: #4fb8a8;
+  --color-track-leetcode: #d9a44a;
+  --color-track-linkedin: #5f9fd1;
+  --color-track-gym: #c96f7f;
+  --color-track-commit: #55c06a;
+
+  /* Status */
+  --color-warn: #d9a44a;
+  --color-danger: #d4685f;
+
+  /* Fonts */
+  --font-sans: var(--font-grotesk), system-ui, sans-serif;
+  --font-mono: var(--font-jb-mono), ui-monospace, monospace;
+  --font-pixel: var(--font-pixel), monospace;
+}
+
+:root {
+  color-scheme: dark;
+}
+
+body {
+  background: var(--color-ink);
+  color: var(--color-fg);
+}
+
+/* All numerals in the app read as instrument data */
+.num {
+  font-family: var(--font-mono);
+  font-variant-numeric: tabular-nums;
+}
+
+/* Subtle CRT scanlines — applied only to the character scene, never globally */
+.scanlines::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background: repeating-linear-gradient(
+    to bottom,
+    transparent 0px,
+    transparent 3px,
+    rgba(0, 0, 0, 0.14) 3px,
+    rgba(0, 0, 0, 0.14) 4px
+  );
+}
