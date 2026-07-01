@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { completeOnboarding } from "@/lib/server/actions";
 
 const INTENSITY_OPTIONS = [
@@ -30,20 +30,21 @@ const TRACK_TOGGLES = [
 export function OnboardingForm() {
   const [hours, setHours] = useState(10);
   const [intensity, setIntensity] = useState<string>("steady");
-  const [timezone, setTimezone] = useState("UTC");
   const [submitting, setSubmitting] = useState(false);
-
-  useEffect(() => {
-    setTimezone(Intl.DateTimeFormat().resolvedOptions().timeZone || "UTC");
-  }, []);
 
   return (
     <form
-      action={completeOnboarding}
+      action={async (formData: FormData) => {
+        // Timezone is a browser fact, stamped at submit time.
+        formData.set(
+          "timezone",
+          Intl.DateTimeFormat().resolvedOptions().timeZone || "UTC",
+        );
+        await completeOnboarding(formData);
+      }}
       onSubmit={() => setSubmitting(true)}
       className="mt-8 flex flex-col gap-8"
     >
-      <input type="hidden" name="timezone" value={timezone} />
 
       <div>
         <div className="flex items-baseline justify-between">

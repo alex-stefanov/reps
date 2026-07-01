@@ -11,7 +11,7 @@ export default async function OnboardingPage() {
   return (
     <main className="mx-auto w-full max-w-md flex-1 px-6 py-10">
       <p className="num text-xs text-faint">
-        // {user.githubHandle} · program setup
+        {`// ${user.githubHandle} · program setup`}
       </p>
       <h1 className="mt-2 font-pixel text-2xl tracking-wider text-phos">
         CALIBRATE

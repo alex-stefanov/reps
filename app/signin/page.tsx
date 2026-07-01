@@ -8,7 +8,9 @@ export default async function SignInPage() {
   return (
     <main className="flex flex-1 flex-col justify-center px-6 pb-24">
       <div className="mx-auto w-full max-w-sm">
-        <p className="num text-xs text-faint">// personal operating system</p>
+        <p className="num text-xs text-faint">
+          {"// personal operating system"}
+        </p>
         <h1 className="mt-3 font-pixel text-4xl tracking-wider text-phos">
           REPS
         </h1>
