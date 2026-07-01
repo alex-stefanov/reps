@@ -19,10 +19,10 @@ import { getActiveProgram } from "./program";
  * grid stats, not hidden in the UI (CLAUDE.md critical rule).
  */
 
+const TRACK_ORDER: Track[] = ["byox", "project", "leetcode", "linkedin"];
+
 export function enabledTracks(user: User): Track[] {
-  const tracks: Track[] = ["byox", "project", "linkedin"];
-  if (user.leetcodeOn) tracks.push("leetcode");
-  return tracks;
+  return TRACK_ORDER.filter((t) => t !== "leetcode" || user.leetcodeOn);
 }
 
 export function enabledStandingTypes(user: User): StandingType[] {

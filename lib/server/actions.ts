@@ -4,6 +4,7 @@ import { and, eq } from "drizzle-orm";
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { todayISO } from "@/lib/core/dates";
+import { TRACK_LABELS } from "@/lib/core/schedule";
 import { getDb } from "@/lib/db/client";
 import {
   scheduleDays,
@@ -11,6 +12,7 @@ import {
   standingTasks,
   users,
   type Intensity,
+  type Track,
 } from "@/lib/db/schema";
 import { requireUser } from "./current-user";
 import {
@@ -154,6 +156,135 @@ export async function updateScheduleTaskHours(
     .where(eq(scheduleTasks.id, taskId));
   revalidatePath("/schedule");
   revalidatePath("/");
+}
+
+/** Ownership guard: resolves a task to its day iff it belongs to `userId`. */
+async function loadOwnedTask(taskId: string, userId: string) {
+  const db = await getDb();
+  const task = await db.query.scheduleTasks.findFirst({
+    where: eq(scheduleTasks.id, taskId),
+  });
+  if (!task) return null;
+  const day = await db.query.scheduleDays.findFirst({
+    where: eq(scheduleDays.id, task.scheduleDayId),
+  });
+  if (!day) return null;
+  const program = await db.query.programs.findFirst({
+    where: (p, { and: andW, eq: eqW }) =>
+      andW(eqW(p.id, day.programId), eqW(p.userId, userId)),
+  });
+  if (!program) return null;
+  return { task, day };
+}
+
+async function loadOwnedDay(dayId: string, userId: string) {
+  const db = await getDb();
+  const day = await db.query.scheduleDays.findFirst({
+    where: eq(scheduleDays.id, dayId),
+  });
+  if (!day) return null;
+  const program = await db.query.programs.findFirst({
+    where: (p, { and: andW, eq: eqW }) =>
+      andW(eqW(p.id, day.programId), eqW(p.userId, userId)),
+  });
+  if (!program) return null;
+  return day;
+}
+
+/** Multi-select completion from the Schedule's + flow (spec §8.1). */
+export async function setScheduleTasksDone(
+  taskIds: string[],
+  done: boolean,
+): Promise<void> {
+  const user = await requireUser();
+  const db = await getDb();
+  const affectedDates = new Set<string>();
+
+  for (const taskId of taskIds) {
+    const owned = await loadOwnedTask(taskId, user.id);
+    if (!owned) continue;
+    await db
+      .update(scheduleTasks)
+      .set({ status: done ? "done" : "todo", doneAt: done ? new Date() : null })
+      .where(eq(scheduleTasks.id, taskId));
+    affectedDates.add(owned.day.date);
+  }
+
+  for (const date of affectedDates) {
+    await recomputeDayCompletion(user, date);
+  }
+  revalidatePath("/");
+  revalidatePath("/schedule");
+}
+
+export async function addScheduleTask(
+  dayId: string,
+  track: Track,
+): Promise<void> {
+  const user = await requireUser();
+  const day = await loadOwnedDay(dayId, user.id);
+  if (!day) return;
+  const db = await getDb();
+  await db.insert(scheduleTasks).values({
+    scheduleDayId: dayId,
+    track,
+    label: TRACK_LABELS[track],
+    hours: 0.5,
+  });
+  await recomputeDayCompletion(user, day.date);
+  revalidatePath("/schedule");
+  revalidatePath("/");
+}
+
+export async function deleteScheduleTask(taskId: string): Promise<void> {
+  const user = await requireUser();
+  const owned = await loadOwnedTask(taskId, user.id);
+  if (!owned) return;
+  const db = await getDb();
+  await db.delete(scheduleTasks).where(eq(scheduleTasks.id, taskId));
+  await recomputeDayCompletion(user, owned.day.date);
+  revalidatePath("/schedule");
+  revalidatePath("/");
+}
+
+export async function updateDayNote(
+  dayId: string,
+  note: string,
+): Promise<void> {
+  const user = await requireUser();
+  const day = await loadOwnedDay(dayId, user.id);
+  if (!day) return;
+  const db = await getDb();
+  await db
+    .update(scheduleDays)
+    .set({ note: note.trim() === "" ? null : note.trim().slice(0, 200) })
+    .where(eq(scheduleDays.id, dayId));
+  revalidatePath("/schedule");
+}
+
+/** Reset the program with new parameters (spec §8.2), keeping settings. */
+export async function regenerateProgram(formData: FormData): Promise<void> {
+  const user = await requireUser();
+  const hoursPerWeek = Math.min(
+    40,
+    Math.max(4, Number(formData.get("hoursPerWeek")) || 10),
+  );
+  const intensityRaw = String(formData.get("intensity"));
+  const intensity = INTENSITIES.includes(intensityRaw as Intensity)
+    ? (intensityRaw as Intensity)
+    : "steady";
+
+  await createProgram(user, {
+    hoursPerWeek,
+    intensity,
+    timezone: user.timezone,
+    leetcodeOn: user.leetcodeOn,
+    gymOn: user.gymOn,
+    dailyCommitOn: user.dailyCommitOn,
+  });
+  await ensureStandingTasks(user, todayISO(user.timezone));
+  await recomputeDayCompletion(user, todayISO(user.timezone));
+  redirect("/schedule");
 }
 
 export interface SettingsInput {
