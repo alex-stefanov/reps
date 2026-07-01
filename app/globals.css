@@ -65,6 +65,72 @@ body {
   font-variant-numeric: tabular-nums;
 }
 
+/* Earned motion only: task check-off, tile ignition, streak loss. */
+
+/* Today's floor tile igniting as tasks complete */
+@keyframes ignite {
+  0% {
+    filter: brightness(3);
+    transform: scaleY(1.25);
+  }
+  100% {
+    filter: brightness(1);
+    transform: scaleY(1);
+  }
+}
+.animate-ignite {
+  animation: ignite 0.5s cubic-bezier(0.16, 1, 0.3, 1);
+  transform-origin: bottom;
+}
+
+/* The character's hop when a task gets checked */
+@keyframes hop {
+  0%, 100% {
+    transform: translateY(0);
+  }
+  30% {
+    transform: translateY(-14%);
+  }
+  55% {
+    transform: translateY(0);
+  }
+  75% {
+    transform: translateY(-7%);
+  }
+}
+.animate-hop {
+  animation: hop 0.7s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+/* Refusal shake — the Commit task cannot be checked by hand */
+@keyframes refuse {
+  0%, 100% {
+    transform: translateX(0);
+  }
+  20%, 60% {
+    transform: translateX(-4px);
+  }
+  40%, 80% {
+    transform: translateX(4px);
+  }
+}
+.animate-refuse {
+  animation: refuse 0.35s ease-in-out;
+}
+
+/* Slow pulse for the pending-verification dot */
+@keyframes pulse-dot {
+  0%, 100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.25;
+  }
+}
+.animate-pulse-dot {
+  animation: pulse-dot 1.6s ease-in-out infinite;
+}
+
 /* Subtle CRT scanlines — applied only to the character scene, never globally */
 .scanlines::after {
   content: "";
