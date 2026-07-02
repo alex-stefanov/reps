@@ -22,7 +22,14 @@ function tileOffset(i: number): { z: number; rot: number } {
 }
 
 function clay(color: string, roughness = 0.65) {
-  return new THREE.MeshStandardMaterial({ color, roughness, metalness: 0.02 });
+  return new THREE.MeshPhysicalMaterial({
+    color,
+    roughness,
+    metalness: 0.02,
+    sheen: 0.3,
+    sheenColor: new THREE.Color("#ffffff"),
+    sheenRoughness: 0.7,
+  });
 }
 
 function Flag({ x, z }: { x: number; z: number }) {
@@ -60,7 +67,7 @@ function Bush({
   const mat = useMemo(() => clay(tone, 0.8), [tone]);
   return (
     <group position={[x, 0, z]} scale={scale}>
-      <mesh material={mat} position={[0, 0.07, 0]}>
+      <mesh material={mat} position={[0, 0.07, 0]} castShadow>
         <sphereGeometry args={[0.11, 14, 14]} />
       </mesh>
       <mesh material={mat} position={[0.09, 0.05, 0.03]}>
@@ -111,14 +118,16 @@ function Tile({ day, x }: { day: PathDay; x: number }) {
       rotation={[day.broken ? 0.06 : 0, rot, day.broken ? -0.05 : 0]}
     >
       {/* stepping stone: slightly conical cylinder reads as hand-formed clay */}
-      <mesh position={[0, -0.065, 0]}>
-        <cylinderGeometry args={[0.29, 0.33, 0.13, 22]} />
-        <meshStandardMaterial
+      <mesh position={[0, -0.065, 0]} castShadow receiveShadow>
+        <cylinderGeometry args={[0.29, 0.33, 0.13, 28]} />
+        <meshPhysicalMaterial
           ref={mat}
           color={color}
           emissive={day.isToday ? "#30d158" : day.level > 0 && !day.broken ? color : "#000000"}
           emissiveIntensity={day.isToday ? 0.2 : day.level > 0 && !day.broken ? 0.16 : 0}
           roughness={0.65}
+          clearcoat={0.15}
+          clearcoatRoughness={0.5}
         />
       </mesh>
       {day.isToday && <GlowRing />}
@@ -131,7 +140,8 @@ function GlowRing() {
   const mat = useRef<THREE.MeshStandardMaterial>(null);
   useFrame(({ clock }) => {
     if (mat.current) {
-      mat.current.emissiveIntensity = 0.75 + Math.sin(clock.elapsedTime * 2.2) * 0.35;
+      // Peaks above the bloom threshold so the ring gets a soft halo.
+      mat.current.emissiveIntensity = 1.6 + Math.sin(clock.elapsedTime * 2.2) * 0.6;
       mat.current.opacity = 0.75 + Math.sin(clock.elapsedTime * 2.2) * 0.2;
     }
   });
@@ -167,7 +177,7 @@ export function WeekPath({
       {/* the floating island — a soft mound whose top sits just under the
           stepping stones, edges peeking into frame for the diorama feel */}
       <group position={[0, -0.29, 0]}>
-        <mesh material={islandMat} scale={[1, 0.135, 0.52]}>
+        <mesh material={islandMat} scale={[1, 0.135, 0.52]} receiveShadow>
           <sphereGeometry args={[1.9, 36, 24]} />
         </mesh>
         <mesh material={islandRimMat} position={[0, -0.12, 0]} scale={[0.96, 0.2, 0.48]}>

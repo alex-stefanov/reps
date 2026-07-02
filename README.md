@@ -131,8 +131,14 @@ The character is a **procedural 3D clay person** built entirely in code
 headphones with accent-ring cups, blinking eyes, breathing, weight shift.
 Real pose states, not color swaps: idle / flourish (task checked: jump,
 arms up, happy squint) / celebrate (day complete) / slump (streak lost).
-Performance is deliberate: no shadow maps, blob shadow + lighting only,
-so weak GPUs hold frame rate.
+
+Rendering is a real PBR pipeline: MeshPhysicalMaterial everywhere (fabric
+sheen + procedural weave bump, skin with subsurface-style sheen, clearcoat
+plastics and metals), image-based lighting from a procedural PMREM studio
+(no HDRI download to fail offline), PCFSoft three-point shadows, and a
+post stack — N8AO ambient occlusion, subtle bloom, gentle depth of field —
+under ACES filmic tone mapping. Software-GL clients are detected and get
+a plain forward path instead of a slideshow.
 
 The signature element survived the redesign: **the character lives on the
 grid** — the current week is a path of 3D clay tiles it stands on. Today's
