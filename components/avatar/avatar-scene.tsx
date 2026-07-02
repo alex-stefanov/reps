@@ -19,11 +19,11 @@ function Rig() {
     );
     camera.position.y = THREE.MathUtils.damp(
       camera.position.y,
-      1.35 + pointer.y * 0.22,
+      1.5 + pointer.y * 0.22,
       3,
       delta,
     );
-    camera.lookAt(0, 0.95, 0);
+    camera.lookAt(0, 0.82, 0);
   });
   return null;
 }
@@ -41,7 +41,7 @@ export default function AvatarScene({
     <Canvas
       dpr={[1, 1.5]}
       gl={{ antialias: true, alpha: true, powerPreference: "low-power" }}
-      camera={{ position: [0, 1.35, 4.4], fov: 33 }}
+      camera={{ position: [0, 1.5, 4.5], fov: 33 }}
       style={{ touchAction: "pan-y" }}
       aria-label="Your builder standing on this week's path"
     >
