@@ -119,13 +119,25 @@ Flagged here so they're easy to revisit:
 
 ## Aesthetic direction
 
-"Night-shift arcade terminal": off-black charcoal, one desaturated phosphor
-green (CRT ↔ GitHub-grid green), JetBrains Mono for every numeral, Space
-Grotesk for UI, Silkscreen for pixel display type. The signature element:
-**the character lives on the grid** — the current week is the floor it
-stands on, today's tile ignites as tasks complete, the streak is the lit
-path behind it, and a broken day is a hole in the floor. Motion is spent
-only where it's earned: check-off, ignition, celebration, loss.
+**"Clay & Glass"** (v2 — replaced the original terminal look at the product
+owner's direction): a light, Apple-grade surface language — porcelain base,
+white cards with diffuse depth, frosted glass, hairline separators, the iOS
+system palette for track colors, Manrope with tabular numerals, spring
+physics on every interaction (framer-motion).
+
+The character is a **procedural 3D clay person** built entirely in code
+(three.js / react-three-fiber — no downloaded model): brand-green hoodie,
+headphones with accent-ring cups, blinking eyes, breathing, weight shift.
+Real pose states, not color swaps: idle / flourish (task checked: jump,
+arms up, happy squint) / celebrate (day complete) / slump (streak lost).
+Performance is deliberate: no shadow maps, blob shadow + lighting only,
+so weak GPUs hold frame rate.
+
+The signature element survived the redesign: **the character lives on the
+grid** — the current week is a path of 3D clay tiles it stands on. Today's
+tile glows greener as tasks complete, broken days sink into the floor, and
+the daily "1/3" is an Apple-Fitness-style ring. The Schedule is iOS day
+cards with a bottom-sheet regenerate flow instead of a data table.
 
 ## Deploying
 
