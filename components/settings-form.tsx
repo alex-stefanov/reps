@@ -8,13 +8,13 @@ const TOGGLES = [
     key: "dailyCommitOn" as const,
     label: "Daily GitHub commit",
     blurb:
-      "The verified task. While on, Commit appears every day and only a real public commit checks it off — no manual override.",
+      "While on, Commit appears every day and only a real public commit checks it off — no manual override.",
   },
   {
     key: "leetcodeOn" as const,
     label: "LeetCode",
     blurb:
-      "Off removes LeetCode everywhere: today's tasks, Schedule columns, and stats. Back on restores it.",
+      "Off removes LeetCode everywhere: today's tasks, Schedule, and stats. Back on restores it.",
   },
   {
     key: "gymOn" as const,
@@ -46,12 +46,20 @@ export function SettingsForm({ initial }: { initial: SettingsValues }) {
 
   return (
     <div className="mt-6">
-      <div className="divide-y divide-line border border-line">
+      <div className="card-shadow divide-y divide-hair rounded-3xl bg-card">
         {TOGGLES.map((toggle) => (
           <label
             key={toggle.key}
-            className="flex cursor-pointer items-start gap-3 bg-panel px-4 py-3.5"
+            className="flex cursor-pointer items-center gap-4 px-5 py-4"
           >
+            <span className="flex-1">
+              <span className="block text-[15px] font-bold text-text">
+                {toggle.label}
+              </span>
+              <span className="block max-w-[40ch] text-xs leading-snug text-sub">
+                {toggle.blurb}
+              </span>
+            </span>
             <input
               type="checkbox"
               checked={values[toggle.key]}
@@ -60,39 +68,35 @@ export function SettingsForm({ initial }: { initial: SettingsValues }) {
               onChange={(e) =>
                 save({ ...values, [toggle.key]: e.target.checked })
               }
-              className="mt-1 size-4 accent-(--color-phos)"
+              className="ios-switch"
             />
-            <span>
-              <span className="block text-sm text-fg">{toggle.label}</span>
-              <span className="block max-w-[44ch] text-xs leading-snug text-dim">
-                {toggle.blurb}
-              </span>
-            </span>
           </label>
         ))}
       </div>
 
-      <label className="mt-6 block text-sm text-fg">
-        Timezone
-        <span className="block text-xs leading-snug text-dim">
-          Defines when “today” ends — the commit-verification boundary.
-        </span>
-        <input
-          defaultValue={values.timezone}
-          disabled={pending}
-          onBlur={(e) => {
-            if (e.target.value !== values.timezone) {
-              save({ ...values, timezone: e.target.value });
-            }
-          }}
-          placeholder="Europe/Berlin"
-          className="num mt-2 w-full max-w-xs border border-line bg-panel px-3 py-2 text-sm text-fg placeholder:text-faint focus:border-phos-dim focus:outline-none"
-        />
-      </label>
+      <div className="card-shadow mt-4 rounded-3xl bg-card px-5 py-4">
+        <label className="block">
+          <span className="text-[15px] font-bold text-text">Timezone</span>
+          <span className="block text-xs leading-snug text-sub">
+            Defines when “today” ends — the commit-verification boundary.
+          </span>
+          <input
+            defaultValue={values.timezone}
+            disabled={pending}
+            onBlur={(e) => {
+              if (e.target.value !== values.timezone) {
+                save({ ...values, timezone: e.target.value });
+              }
+            }}
+            placeholder="Europe/Berlin"
+            className="num mt-3 w-full max-w-xs rounded-xl bg-inset px-3.5 py-2.5 text-sm font-semibold text-text placeholder:text-mute focus:outline-none focus:ring-2 focus:ring-accent/40"
+          />
+        </label>
+      </div>
 
       <p
         role="status"
-        className={`num mt-4 text-xs ${saved ? "text-phos" : "text-faint"}`}
+        className={`num mt-3 px-2 text-xs font-bold ${saved ? "text-accent-deep" : "text-mute"}`}
       >
         {pending ? "saving…" : saved ? "saved — tracks updated everywhere" : " "}
       </p>

@@ -52,7 +52,7 @@ test.describe.serial("the daily loop", () => {
 
     await expect(page).toHaveURL(/\/onboarding/, { timeout: 20_000 });
     // Defaults: 10h/week steady, all tracks on. Grind gives Day 1 a Project task.
-    await page.getByText("GRIND", { exact: true }).click();
+    await page.getByText("Grind", { exact: true }).click();
     await page.getByRole("button", { name: /Generate my program/ }).click();
 
     await expect(page.getByTestId("day-number")).toHaveText("1", {
@@ -71,7 +71,7 @@ test.describe.serial("the daily loop", () => {
     const commit = page.getByTestId("task-commit");
 
     await expect(commit).toHaveAttribute("aria-pressed", "false");
-    await expect(commit).toContainText("awaiting");
+    await expect(commit).toContainText(/awaiting/i);
 
     await commit.click();
     // The refusal: message appears, task does NOT check off.
@@ -95,7 +95,7 @@ test.describe.serial("the daily loop", () => {
     await page.goto("/");
     const commit = page.getByTestId("task-commit");
     await expect(commit).toHaveAttribute("aria-pressed", "true");
-    await expect(commit).toContainText("verified");
+    await expect(commit).toContainText(/verified/i);
     await expect(commit).toContainText("e2e-alex/daily-grind@e2e0c0f");
     await expect(page.getByTestId("done-count")).toHaveText("1");
 
@@ -143,7 +143,7 @@ test.describe.serial("the daily loop", () => {
     await signIn(page);
     await page.goto("/schedule");
     await expect(
-      page.getByTestId("schedule-grid").getByText("LEETCODE"),
+      page.getByTestId("schedule-grid").getByText("LeetCode").first(),
     ).toBeVisible();
 
     await page.goto("/settings");
@@ -154,8 +154,9 @@ test.describe.serial("the daily loop", () => {
     await expect(page.getByTestId("task-leetcode")).toHaveCount(0);
 
     await page.goto("/schedule");
+    await expect(page.getByTestId("schedule-grid")).toBeVisible();
     await expect(
-      page.getByTestId("schedule-grid").getByText("LEETCODE"),
+      page.getByTestId("schedule-grid").getByText("LeetCode"),
     ).toHaveCount(0);
 
     // Back on: the track returns — removed, not destroyed.

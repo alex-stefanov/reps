@@ -5,7 +5,7 @@ export default async function IdeasPage() {
   await requireUser();
   return (
     <PhaseStub
-      title="IDEAS POOL"
+      title="Ideas Pool"
       blurb="Every project idea in one filterable pool — BYOX, SaaS, Project — placeable into the Schedule as Project Work, with an AI brainstorm partner."
     />
   );

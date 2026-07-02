@@ -9,16 +9,16 @@ export default async function OnboardingPage() {
   if (program) redirect("/");
 
   return (
-    <main className="mx-auto w-full max-w-md flex-1 px-6 py-10">
-      <p className="num text-xs text-faint">
-        {`// ${user.githubHandle} · program setup`}
+    <main className="mx-auto w-full max-w-md flex-1 px-5 py-10">
+      <p className="num text-xs font-bold text-mute">
+        {user.githubHandle} · program setup
       </p>
-      <h1 className="mt-2 font-pixel text-2xl tracking-wider text-phos">
-        CALIBRATE
+      <h1 className="mt-2 text-[2rem] font-extrabold leading-tight tracking-tight text-text">
+        Calibrate
       </h1>
-      <p className="mt-3 text-sm leading-relaxed text-dim">
-        Two questions generate your whole plan. You can edit every cell of it
-        afterwards, or regenerate from scratch anytime.
+      <p className="mt-2 text-[15px] leading-relaxed text-sub">
+        Two questions generate your whole plan. Every cell stays editable, and
+        you can regenerate anytime.
       </p>
       <OnboardingForm />
     </main>

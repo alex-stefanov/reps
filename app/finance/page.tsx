@@ -5,7 +5,7 @@ export default async function FinancePage() {
   await requireUser();
   return (
     <PhaseStub
-      title="FINANCE"
+      title="Finance"
       blurb="Income and spending as growth — period charts, categories, and the money-flow Sankey. Manual entry first, receipt scan later."
     />
   );

@@ -5,7 +5,7 @@ export default async function CustomizePage() {
   await requireUser();
   return (
     <PhaseStub
-      title="CUSTOMIZE"
+      title="Customize"
       blurb="Build the character from appearance options; earn and equip cosmetics. For now the little builder wears the default hoodie."
     />
   );

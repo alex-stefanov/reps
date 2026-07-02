@@ -5,7 +5,7 @@ export default async function TutorialsPage() {
   await requireUser();
   return (
     <PhaseStub
-      title="TUTORIALS"
+      title="Tutorials"
       blurb="The curated learning library — build-your-own-X guides and from-scratch videos, filterable by language and topic."
     />
   );

@@ -1,12 +1,13 @@
 "use client";
 
+import { motion } from "framer-motion";
 import { useState } from "react";
 import { completeOnboarding } from "@/lib/server/actions";
 
 const INTENSITY_OPTIONS = [
-  { value: "chill", label: "CHILL", blurb: "Keep momentum. 2 build days." },
-  { value: "steady", label: "STEADY", blurb: "Real progress. 5 build days." },
-  { value: "grind", label: "GRIND", blurb: "All in. 6 build days." },
+  { value: "chill", label: "Chill", blurb: "Keep momentum · 2 build days" },
+  { value: "steady", label: "Steady", blurb: "Real progress · 5 build days" },
+  { value: "grind", label: "Grind", blurb: "All in · 6 build days" },
 ] as const;
 
 const TRACK_TOGGLES = [
@@ -43,15 +44,16 @@ export function OnboardingForm() {
         await completeOnboarding(formData);
       }}
       onSubmit={() => setSubmitting(true)}
-      className="mt-8 flex flex-col gap-8"
+      className="mt-8 flex flex-col gap-6"
     >
-
-      <div>
+      <div className="card-shadow rounded-3xl bg-card p-5">
         <div className="flex items-baseline justify-between">
-          <label htmlFor="hoursPerWeek" className="text-sm text-fg">
+          <label htmlFor="hoursPerWeek" className="text-sm font-bold text-text">
             Hours per week
           </label>
-          <span className="num text-2xl text-phos-bright">{hours}h</span>
+          <span className="num text-3xl font-extrabold text-accent-deep">
+            {hours}h
+          </span>
         </div>
         <input
           id="hoursPerWeek"
@@ -62,24 +64,26 @@ export function OnboardingForm() {
           step={1}
           value={hours}
           onChange={(e) => setHours(Number(e.target.value))}
-          className="mt-3 w-full accent-(--color-phos)"
+          className="mt-4 w-full accent-(--color-accent)"
         />
-        <div className="num mt-1 flex justify-between text-xs text-faint">
+        <div className="num mt-1.5 flex justify-between text-xs font-semibold text-mute">
           <span>4h · easing in</span>
           <span>30h · second job</span>
         </div>
       </div>
 
-      <fieldset>
-        <legend className="text-sm text-fg">How grindy?</legend>
-        <div className="mt-3 grid grid-cols-3 gap-2">
+      <fieldset className="card-shadow rounded-3xl bg-card p-5">
+        <legend className="sr-only">How grindy?</legend>
+        <p className="text-sm font-bold text-text">How grindy?</p>
+        <div className="mt-3 flex flex-col gap-2">
           {INTENSITY_OPTIONS.map((opt) => (
-            <label
+            <motion.label
               key={opt.value}
-              className={`cursor-pointer border px-3 py-3 transition-colors ${
+              whileTap={{ scale: 0.98 }}
+              className={`flex cursor-pointer items-center justify-between rounded-2xl border-2 px-4 py-3 transition-colors ${
                 intensity === opt.value
-                  ? "border-phos bg-raised text-phos-bright"
-                  : "border-line bg-panel text-dim hover:border-line-bright"
+                  ? "border-accent bg-accent-soft"
+                  : "border-hair bg-card hover:border-hair-strong"
               }`}
             >
               <input
@@ -90,50 +94,58 @@ export function OnboardingForm() {
                 onChange={() => setIntensity(opt.value)}
                 className="sr-only"
               />
-              <span className="font-pixel text-[11px] tracking-wider">
-                {opt.label}
-              </span>
-              <span className="mt-1 block text-xs leading-snug">
-                {opt.blurb}
-              </span>
-            </label>
-          ))}
-        </div>
-      </fieldset>
-
-      <fieldset>
-        <legend className="text-sm text-fg">Standing tracks</legend>
-        <div className="mt-3 divide-y divide-line border border-line">
-          {TRACK_TOGGLES.map((toggle) => (
-            <label
-              key={toggle.name}
-              className="flex cursor-pointer items-start gap-3 bg-panel px-4 py-3"
-            >
-              <input
-                type="checkbox"
-                name={toggle.name}
-                defaultChecked
-                className="mt-1 size-4 accent-(--color-phos)"
-              />
               <span>
-                <span className="block text-sm text-fg">{toggle.label}</span>
-                <span className="block text-xs leading-snug text-dim">
-                  {toggle.blurb}
+                <span className="block text-[15px] font-bold text-text">
+                  {opt.label}
+                </span>
+                <span className="block text-xs font-medium text-sub">
+                  {opt.blurb}
                 </span>
               </span>
-            </label>
+              <span
+                className={`flex size-6 items-center justify-center rounded-full border-2 ${
+                  intensity === opt.value
+                    ? "border-accent bg-accent"
+                    : "border-hair-strong"
+                }`}
+              >
+                {intensity === opt.value && (
+                  <span className="size-2 rounded-full bg-white" />
+                )}
+              </span>
+            </motion.label>
           ))}
         </div>
       </fieldset>
 
-      <button
+      <fieldset className="card-shadow divide-y divide-hair rounded-3xl bg-card">
+        <legend className="sr-only">Standing tracks</legend>
+        {TRACK_TOGGLES.map((toggle) => (
+          <label
+            key={toggle.name}
+            className="flex cursor-pointer items-center gap-3 px-5 py-4"
+          >
+            <span className="flex-1">
+              <span className="block text-[15px] font-bold text-text">
+                {toggle.label}
+              </span>
+              <span className="block text-xs leading-snug text-sub">
+                {toggle.blurb}
+              </span>
+            </span>
+            <input type="checkbox" name={toggle.name} defaultChecked className="ios-switch" />
+          </label>
+        ))}
+      </fieldset>
+
+      <motion.button
         type="submit"
         disabled={submitting}
-        className="border border-phos-dim bg-raised px-4 py-3 text-left text-sm font-medium text-phos-bright transition-colors hover:border-phos disabled:opacity-60 active:translate-y-px"
+        whileTap={{ scale: 0.98 }}
+        className="card-shadow rounded-2xl bg-text py-4 text-[15px] font-bold text-card disabled:opacity-60"
       >
-        <span className="num mr-3">›</span>
         {submitting ? "Generating program…" : "Generate my program"}
-      </button>
+      </motion.button>
     </form>
   );
 }

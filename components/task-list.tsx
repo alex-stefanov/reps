@@ -51,8 +51,8 @@ function CheckCircle({
 }) {
   return (
     <motion.span
-      animate={{ scale: done ? [1, 1.25, 1] : 1 }}
-      transition={{ type: "spring", stiffness: 500, damping: 18 }}
+      animate={{ scale: done ? [1, 1.3, 1] : 1 }}
+      transition={{ duration: 0.4, times: [0, 0.45, 1], ease: "easeOut" }}
       className={`flex size-7 shrink-0 items-center justify-center rounded-full border-2 transition-colors ${
         done
           ? "border-accent bg-accent text-white"
