@@ -87,6 +87,8 @@ export async function setScheduleTaskDone(
       andW(eqW(p.id, day.programId), eqW(p.userId, user.id)),
   });
   if (!program) return;
+  // Completion is for days that have arrived (planning ahead is fine).
+  if (day.date > todayISO(user.timezone)) return;
 
   await db
     .update(scheduleTasks)
@@ -118,6 +120,9 @@ export async function setStandingTaskDone(
 
   if (task.type === "commit" && user.dailyCommitOn) {
     return { refused: "Commit checks itself off when a real public commit exists." };
+  }
+  if (task.date > todayISO(user.timezone)) {
+    return { refused: "Future tasks unlock on their day." };
   }
 
   await db
@@ -191,18 +196,23 @@ async function loadOwnedDay(dayId: string, userId: string) {
   return day;
 }
 
-/** Multi-select completion from the Schedule's + flow (spec §8.1). */
+/**
+ * Multi-select completion from the Schedule's + flow (spec §8.1).
+ * Future days are read-only: you can plan tomorrow, not complete it.
+ */
 export async function setScheduleTasksDone(
   taskIds: string[],
   done: boolean,
 ): Promise<void> {
   const user = await requireUser();
   const db = await getDb();
+  const today = todayISO(user.timezone);
   const affectedDates = new Set<string>();
 
   for (const taskId of taskIds) {
     const owned = await loadOwnedTask(taskId, user.id);
     if (!owned) continue;
+    if (owned.day.date > today) continue;
     await db
       .update(scheduleTasks)
       .set({ status: done ? "done" : "todo", doneAt: done ? new Date() : null })

@@ -123,6 +123,15 @@ export function BookIcon(props: IconProps) {
   );
 }
 
+export function LockIcon(props: IconProps) {
+  return (
+    <svg {...base(props)}>
+      <rect x="6" y="11" width="12" height="9" />
+      <path d="M8.5 11V8a3.5 3.5 0 0 1 7 0v3" />
+    </svg>
+  );
+}
+
 export function CodeIcon(props: IconProps) {
   return (
     <svg {...base(props)}>

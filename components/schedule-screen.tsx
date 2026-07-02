@@ -17,6 +17,7 @@ import {
   CheckIcon,
   ChevronLeftIcon,
   ChevronRightIcon,
+  LockIcon,
   PencilIcon,
   PlusIcon,
   RegenerateIcon,
@@ -51,6 +52,7 @@ function TaskRow({
   task,
   mode,
   selected,
+  locked,
   busy,
   onTap,
   onHours,
@@ -59,6 +61,8 @@ function TaskRow({
   task: WeekViewTask;
   mode: Mode;
   selected: boolean;
+  /** Future day: plannable (edit mode works), not completable. */
+  locked: boolean;
   busy: boolean;
   onTap: () => void;
   onHours: (h: number) => void;
@@ -115,19 +119,24 @@ function TaskRow({
   return (
     <motion.button
       type="button"
-      whileTap={{ scale: 0.98 }}
-      disabled={busy}
+      whileTap={locked ? undefined : { scale: 0.98 }}
+      disabled={busy || locked}
       onClick={onTap}
       aria-pressed={mode === "select" ? undefined : task.done}
+      aria-disabled={locked || undefined}
       data-selected={mode === "select" ? selected : undefined}
       className={`-mx-2 flex w-[calc(100%+1rem)] items-center gap-3 rounded-xl px-2 py-2.5 text-left transition-colors ${
-        selected ? "bg-accent-soft" : "hover:bg-inset"
-      }`}
+        selected ? "bg-accent-soft" : locked ? "" : "hover:bg-inset"
+      } ${locked ? "cursor-default" : ""}`}
     >
-      <span className={`size-2.5 shrink-0 rounded-full ${TRACK_DOT[task.track]}`} />
+      <span
+        className={`size-2.5 shrink-0 rounded-full ${TRACK_DOT[task.track]} ${
+          locked ? "opacity-50" : ""
+        }`}
+      />
       <span
         className={`flex-1 truncate text-[15px] font-semibold ${
-          task.done ? "text-mute line-through" : "text-text"
+          task.done ? "text-mute line-through" : locked ? "text-sub" : "text-text"
         }`}
       >
         {task.label}
@@ -135,21 +144,30 @@ function TaskRow({
       <span className="num shrink-0 rounded-full bg-inset px-2 py-0.5 text-xs font-bold text-sub">
         {task.hours}h
       </span>
-      <span
-        className={`flex size-6 shrink-0 items-center justify-center rounded-full border-2 transition-colors ${
-          mode === "select"
-            ? selected
-              ? "border-accent bg-accent text-white"
-              : "border-hair-strong"
-            : task.done
-              ? "border-accent bg-accent text-white"
-              : "border-hair-strong"
-        }`}
-      >
-        {(mode === "select" ? selected : task.done) && (
-          <CheckIcon className="size-3.5" />
-        )}
-      </span>
+      {locked ? (
+        <span
+          className="flex size-6 shrink-0 items-center justify-center rounded-full border-2 border-hair text-mute"
+          title="Unlocks on its day"
+        >
+          <LockIcon className="size-3" />
+        </span>
+      ) : (
+        <span
+          className={`flex size-6 shrink-0 items-center justify-center rounded-full border-2 transition-colors ${
+            mode === "select"
+              ? selected
+                ? "border-accent bg-accent text-white"
+                : "border-hair-strong"
+              : task.done
+                ? "border-accent bg-accent text-white"
+                : "border-hair-strong"
+          }`}
+        >
+          {(mode === "select" ? selected : task.done) && (
+            <CheckIcon className="size-3.5" />
+          )}
+        </span>
+      )}
     </motion.button>
   );
 }
@@ -202,6 +220,12 @@ function DayCard({
               Today
             </span>
           )}
+          {day.complete && (
+            <span className="flex items-center gap-1 rounded-full bg-accent px-2 py-0.5 text-[11px] font-bold text-white">
+              <CheckIcon className="size-3" />
+              Done
+            </span>
+          )}
         </div>
         {day.totalHours > 0 && (
           <span className="num text-sm font-bold text-sub">
@@ -222,6 +246,7 @@ function DayCard({
             task={task}
             mode={mode}
             selected={selected.has(task.id)}
+            locked={day.isFuture}
             busy={busy}
             onTap={() => onTaskTap(task)}
             onHours={(h) => onHours(task.id, h)}

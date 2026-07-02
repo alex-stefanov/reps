@@ -23,6 +23,10 @@ export interface WeekViewDay {
   date: string;
   weekday: string;
   isToday: boolean;
+  /** Future days are plannable but not completable. */
+  isFuture: boolean;
+  /** Every task done — the day counts as completed. */
+  complete: boolean;
   note: string | null;
   tasks: WeekViewTask[];
   totalHours: number;
@@ -94,6 +98,8 @@ export async function getWeekView(
       date: day.date,
       weekday: weekdayName(day.date),
       isToday: day.date === today,
+      isFuture: day.date > today,
+      complete: tasks.length > 0 && tasks.every((t) => t.done),
       note: day.note,
       tasks,
       totalHours: tasks.reduce((s, t) => s + t.hours, 0),
