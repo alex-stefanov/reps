@@ -72,15 +72,21 @@ export async function fetchPublicEvents(
     headers.Authorization = `Bearer ${process.env.GITHUB_TOKEN}`;
   }
 
-  const res = await fetchImpl(
-    `${base}/users/${encodeURIComponent(handle)}/events/public?per_page=100`,
-    { headers, cache: "no-store" },
-  );
-  if (!res.ok) return { ok: false, status: res.status };
+  try {
+    const res = await fetchImpl(
+      `${base}/users/${encodeURIComponent(handle)}/events/public?per_page=100`,
+      { headers, cache: "no-store" },
+    );
+    if (!res.ok) return { ok: false, status: res.status };
 
-  const body = (await res.json()) as unknown;
-  if (!Array.isArray(body)) return { ok: false, status: 502 };
-  return { ok: true, events: body as GitHubEvent[] };
+    const body = (await res.json()) as unknown;
+    if (!Array.isArray(body)) return { ok: false, status: 502 };
+    return { ok: true, events: body as GitHubEvent[] };
+  } catch {
+    // Network-level failure (offline, DNS, timeout): verification becomes
+    // "unavailable" — it must never crash the loop or fake an answer.
+    return { ok: false, status: 0 };
+  }
 }
 
 /**

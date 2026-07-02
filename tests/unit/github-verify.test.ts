@@ -108,4 +108,12 @@ describe("checkCommitForDate", () => {
     );
     expect(result.status).toBe("unavailable");
   });
+
+  it("treats a network-level failure (offline/DNS) as unavailable, not a crash", async () => {
+    const failing: typeof fetch = async () => {
+      throw new TypeError("fetch failed");
+    };
+    const result = await checkCommitForDate("alex", "2026-07-01", "UTC", failing);
+    expect(result).toEqual({ status: "unavailable", httpStatus: 0 });
+  });
 });
