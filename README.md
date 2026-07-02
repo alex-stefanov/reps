@@ -2,12 +2,11 @@
 
 **The daily loop, verified.** A character-driven personal operating system for
 becoming a real software engineer: a generated plan says what today should
-contain, a pixel character lives on your contribution grid, and the daily
+contain, a 3D character lives on your week's path, and the daily
 Commit task only checks off when a **real public GitHub commit** exists — the
 app refuses to let you lie to yourself.
 
-Full product spec: [docs/PRODUCT_SPEC.md](docs/PRODUCT_SPEC.md) ·
-Engineering conventions: [CLAUDE.md](CLAUDE.md)
+Full product spec: [docs/PRODUCT_SPEC.md](docs/PRODUCT_SPEC.md)
 
 ## Status — Phase 1 (the loop) is built
 
@@ -20,15 +19,17 @@ Per spec §16, only Phase 1 exists so far, and it's complete:
 - **Home ("Day X")** — today's task blobs from the schedule + standing
   tasks, live "1/3" counter, the character on the week-strip terrain,
   month contribution grid, icon rail, Plan button.
-- **Schedule** — landscape week grid (Day / BYOX / Project / LeetCode /
-  LinkedIn / Th / Note), per-cell hour steppers, add/remove tasks, notes,
-  multi-select mark-done, non-destructive regeneration.
+- **Schedule** — iOS-style day cards with a week pager: tap-to-complete
+  task rows, hour steppers, add/remove tasks, notes, multi-select
+  mark-done, bottom-sheet regeneration. Future days are plannable but
+  locked for completion.
 - **GitHub commit verification** — sync on app open + a cron backstop
   every 30 min. Found commit → Commit checks itself off. No commit → it
   stays pending; there is **no manual override** while the toggle is on.
-- **Character** — hand-authored pixel sprite with real frame-based states:
-  idle (breathing/blink), task-done flourish, all-done celebration,
-  streak-loss slump.
+- **Character** — a procedural 3D clay person (react-three-fiber) with a
+  posed skeleton: idle (breathing, blinks, look-around), task-done
+  flourish, all-done celebration, streak-loss slump — standing on the
+  week's stepping-stone diorama.
 - **Settings** — LeetCode / Gym / daily-commit toggles that genuinely
   remove tracks from tasks, Schedule columns, *and* stats; timezone
   (defines the "today" verification boundary); sign out.

@@ -55,3 +55,9 @@ next-env.d.ts
 
 # e2e next dist
 .next-e2e/
+
+# local tooling config (not part of the app)
+CLAUDE.md
+.claude/
+.agents/
+skills-lock.json
