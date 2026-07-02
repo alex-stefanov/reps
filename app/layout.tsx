@@ -1,20 +1,9 @@
 import type { Metadata, Viewport } from "next";
-import { Space_Grotesk, JetBrains_Mono, Silkscreen } from "next/font/google";
+import { Manrope } from "next/font/google";
 import "./globals.css";
 
-const grotesk = Space_Grotesk({
-  variable: "--font-grotesk",
-  subsets: ["latin"],
-});
-
-const jbMono = JetBrains_Mono({
-  variable: "--font-jb-mono",
-  subsets: ["latin"],
-});
-
-const pixel = Silkscreen({
-  weight: ["400", "700"],
-  variable: "--font-pixel",
+const manrope = Manrope({
+  variable: "--font-manrope",
   subsets: ["latin"],
 });
 
@@ -25,8 +14,8 @@ export const metadata: Metadata = {
 };
 
 export const viewport: Viewport = {
-  themeColor: "#0b0f0c",
-  colorScheme: "dark",
+  themeColor: "#f2f3f7",
+  colorScheme: "light",
 };
 
 export default function RootLayout({
@@ -35,11 +24,8 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html
-      lang="en"
-      className={`${grotesk.variable} ${jbMono.variable} ${pixel.variable} h-full antialiased`}
-    >
-      <body className="min-h-full flex flex-col bg-ink text-fg font-sans">
+    <html lang="en" className={`${manrope.variable} h-full antialiased`}>
+      <body className="min-h-full flex flex-col bg-base text-text font-sans">
         {children}
       </body>
     </html>
