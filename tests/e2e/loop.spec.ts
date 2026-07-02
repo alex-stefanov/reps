@@ -167,6 +167,26 @@ test.describe.serial("the daily loop", () => {
     await expect(page.getByTestId("task-leetcode")).toHaveCount(1);
   });
 
+  test("future days are plannable but locked for completion", async ({
+    page,
+  }) => {
+    await signIn(page);
+    await page.goto("/schedule");
+    const grid = page.getByTestId("schedule-grid");
+    await expect(grid).toBeVisible();
+
+    // The program is 12 weeks from today, so this week has future days —
+    // their task rows carry lock markers instead of check circles.
+    const locks = grid.locator('[title="Unlocks on its day"]');
+    expect(await locks.count()).toBeGreaterThan(0);
+
+    // A locked row is disabled: clicking it must not complete the task.
+    const lockedRow = grid
+      .locator('button[aria-disabled="true"][aria-pressed="false"]')
+      .first();
+    await expect(lockedRow).toBeDisabled();
+  });
+
   test("cron endpoint rejects unauthorized callers", async ({ baseURL }) => {
     const res = await fetch(`${baseURL}/api/sync`);
     expect(res.status).toBe(401);
