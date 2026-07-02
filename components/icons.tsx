@@ -123,6 +123,50 @@ export function BookIcon(props: IconProps) {
   );
 }
 
+export function CodeIcon(props: IconProps) {
+  return (
+    <svg {...base(props)}>
+      <path d="m8 7-5 5 5 5m8-10 5 5-5 5M14 4l-4 16" />
+    </svg>
+  );
+}
+
+export function HammerIcon(props: IconProps) {
+  return (
+    <svg {...base(props)}>
+      <path d="M14 6 8 12l4 4 6-6m-4-4 2-2 6 6-2 2m-6-6 4 4M10 14l-6 6" />
+    </svg>
+  );
+}
+
+export function PuzzleIcon(props: IconProps) {
+  return (
+    <svg {...base(props)}>
+      <path d="M9 4h6v4a2 2 0 1 0 4 0h1v12H4V8h3a2 2 0 1 0 2-2V4z" />
+    </svg>
+  );
+}
+
+export function ShareIcon(props: IconProps) {
+  return (
+    <svg {...base(props)}>
+      <circle cx="6" cy="12" r="2.5" />
+      <circle cx="18" cy="6" r="2.5" />
+      <circle cx="18" cy="18" r="2.5" />
+      <path d="m8.3 10.8 7.4-3.6m-7.4 6 7.4 3.6" />
+    </svg>
+  );
+}
+
+export function CommitIcon(props: IconProps) {
+  return (
+    <svg {...base(props)}>
+      <circle cx="12" cy="12" r="3.5" />
+      <path d="M2 12h6.5m7 0H22" />
+    </svg>
+  );
+}
+
 export function PersonIcon(props: IconProps) {
   return (
     <svg {...base(props)}>

@@ -1,15 +1,24 @@
 "use client";
 
+import dynamic from "next/dynamic";
 import { useEffect, useRef, useState } from "react";
 import type { SceneDay } from "@/lib/server/home-view";
-import { PixelSprite, type SpriteState } from "./pixel-sprite";
+import type { AvatarState } from "./avatar/builder";
 
 /**
- * The signature scene: the character lives ON the contribution grid.
- * The current program week is the floor — seven tiles, today underfoot.
- * Completing tasks ignites today's tile; the streak is the lit path
- * behind the sprite; a broken day is a visible gap in the floor.
+ * The hero: a 3D scene in a glass card. The character lives on the week's
+ * 3D path; the capsule strip below mirrors it in DOM (and carries the
+ * level classes the e2e suite asserts against).
  */
+
+const AvatarScene = dynamic(() => import("./avatar/avatar-scene"), {
+  ssr: false,
+  loading: () => (
+    <div className="flex h-full items-center justify-center">
+      <div className="size-16 animate-pulse-dot rounded-full bg-cell-1" />
+    </div>
+  ),
+});
 
 const LEVEL_BG = [
   "bg-cell-0",
@@ -19,7 +28,6 @@ const LEVEL_BG = [
   "bg-cell-4",
 ];
 
-/** Program weeks start on Day 1's weekday, not Monday — label from the date. */
 function dayLetter(dateISO: string): string {
   const [y, m, d] = dateISO.split("-").map(Number);
   return "SMTWTFS"[new Date(Date.UTC(y, m - 1, d)).getUTCDay()];
@@ -40,7 +48,7 @@ export function CharacterScene({
   streak: number;
   justLost: boolean;
 }) {
-  const baseState: SpriteState =
+  const baseState: AvatarState =
     totalCount > 0 && doneCount >= totalCount
       ? "celebrate"
       : justLost && doneCount === 0
@@ -53,7 +61,7 @@ export function CharacterScene({
   useEffect(() => {
     if (doneCount > prevDone.current && baseState !== "celebrate") {
       setFlourishing(true);
-      const t = setTimeout(() => setFlourishing(false), 1400);
+      const t = setTimeout(() => setFlourishing(false), 1600);
       return () => clearTimeout(t);
     }
     prevDone.current = doneCount;
@@ -63,92 +71,58 @@ export function CharacterScene({
     prevDone.current = doneCount;
   }, [doneCount]);
 
-  const spriteState: SpriteState = flourishing ? "flourish" : baseState;
-  const spriteCol = todayIndex >= 0 ? todayIndex : 6;
+  const state: AvatarState = flourishing ? "flourish" : baseState;
 
   return (
     <section
       aria-label="Character and current week"
-      className="scanlines relative overflow-hidden border border-line bg-panel"
+      className="card-shadow-lg relative overflow-hidden rounded-[2rem] bg-gradient-to-b from-[#eef6ff] via-[#f2f7f3] to-[#e9f7ee]"
     >
-      {/* Streak chip */}
-      <div className="absolute right-3 top-3 z-10 text-right">
+      {/* Streak pill */}
+      <div className="absolute right-4 top-4 z-10">
         {justLost && streak === 0 ? (
-          <span className="font-pixel text-[10px] tracking-wider text-danger">
-            STREAK LOST
+          <span className="glass card-shadow inline-flex items-center gap-1.5 rounded-full px-3 py-1.5 text-xs font-bold text-danger">
+            <span className="size-1.5 rounded-full bg-danger" />
+            Streak lost
           </span>
         ) : (
-          <span className="font-pixel text-[10px] tracking-wider text-dim">
-            STREAK{" "}
-            <span className={streak > 0 ? "text-phos-bright" : "text-faint"}>
-              {streak}
-            </span>
+          <span className="glass card-shadow num inline-flex items-center gap-1.5 rounded-full px-3 py-1.5 text-xs font-bold text-text">
+            <span
+              className={`size-1.5 rounded-full ${streak > 0 ? "bg-accent" : "bg-mute"}`}
+            />
+            {streak} day streak
           </span>
         )}
       </div>
 
-      {/* Horizon glow behind the sprite */}
-      <div
-        className="pointer-events-none absolute bottom-10 h-24 w-40 -translate-x-1/2 rounded-full opacity-25 blur-2xl"
-        style={{
-          left: `${((spriteCol + 0.5) / 7) * 100}%`,
-          background:
-            "radial-gradient(closest-side, var(--color-phos) 0%, transparent 75%)",
-        }}
-      />
+      <div className="h-72 sm:h-80" data-avatar-state={state}>
+        <AvatarScene state={state} week={week} todayIndex={todayIndex} />
+      </div>
 
-      <div className="relative h-44">
-        {/* Sprite above today's tile */}
-        <div
-          className={`absolute bottom-[3.1rem] w-16 -translate-x-1/2 transition-[left] duration-500 ${
-            flourishing ? "animate-hop" : ""
-          }`}
-          style={{
-            left: `clamp(2.25rem, ${((spriteCol + 0.5) / 7) * 100}%, calc(100% - 2.25rem))`,
-          }}
-        >
-          <PixelSprite state={spriteState} className="h-20 w-16" />
-        </div>
-
-        {/* The week as floor tiles */}
-        <div className="absolute inset-x-0 bottom-0 grid grid-cols-7">
-          {week.map((day) => {
-            const lit = LEVEL_BG[Math.min(day.level, 4)];
-            return (
-              <div key={day.date} className="flex flex-col">
-                {/* top face */}
-                <div
-                  key={`${day.date}-${day.level}`}
-                  data-testid={day.isToday ? "today-tile" : undefined}
-                  className={`h-7 border-r border-ink/60 last:border-r-0 ${
-                    day.isFuture
-                      ? "bg-cell-0/50"
-                      : day.broken
-                        ? "bg-ink shadow-[inset_0_4px_8px_rgba(0,0,0,0.8)]"
-                        : lit
-                  } ${day.isToday && day.level > 0 ? "animate-ignite" : ""} ${
-                    day.isToday
-                      ? "shadow-[0_-6px_18px_-4px_var(--color-phos-dim)]"
-                      : ""
-                  }`}
-                />
-                {/* front edge */}
-                <div
-                  className={`h-2.5 ${
-                    day.broken ? "bg-ink" : "bg-raised"
-                  } border-r border-ink/60 last:border-r-0`}
-                />
-                <div
-                  className={`num py-1 text-center text-[10px] ${
-                    day.isToday ? "text-phos-bright" : "text-faint"
-                  }`}
-                >
-                  {dayLetter(day.date)}
-                </div>
-              </div>
-            );
-          })}
-        </div>
+      {/* DOM mirror of the week path */}
+      <div className="grid grid-cols-7 gap-1.5 px-5 pb-5">
+        {week.map((day) => (
+          <div key={day.date} className="flex flex-col items-center gap-1.5">
+            <div
+              data-testid={day.isToday ? "today-tile" : undefined}
+              data-level={day.level}
+              className={`h-2 w-full rounded-full transition-colors duration-500 ${
+                day.isFuture
+                  ? "bg-cell-0/60"
+                  : day.broken
+                    ? "bg-[#3a3d45]"
+                    : LEVEL_BG[Math.min(day.level, 4)]
+              } ${day.isToday ? "ring-2 ring-accent/40 ring-offset-1" : ""}`}
+            />
+            <span
+              className={`num text-[10px] font-bold ${
+                day.isToday ? "text-accent-deep" : "text-mute"
+              }`}
+            >
+              {dayLetter(day.date)}
+            </span>
+          </div>
+        ))}
       </div>
     </section>
   );

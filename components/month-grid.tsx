@@ -1,7 +1,7 @@
 import type { MonthCell } from "@/lib/server/home-view";
 
 /**
- * "This month" — the GitHub-style grid (spec §6.1), Monday-aligned.
+ * "This month" — the contribution grid (spec §6.1), Monday-aligned.
  * Levels come from DayCompletion ratios (default for spec open Q2).
  */
 
@@ -23,25 +23,29 @@ export function MonthGrid({
   cells: MonthCell[];
 }) {
   const litDays = cells.filter((c) => c.level > 0).length;
+  const pretty = label.charAt(0) + label.slice(1).toLowerCase();
 
   return (
-    <section aria-label={`Contribution grid for ${label}`}>
+    <section
+      aria-label={`Contribution grid for ${label}`}
+      className="card-shadow rounded-3xl bg-card p-5"
+    >
       <div className="flex items-baseline justify-between">
-        <h2 className="font-pixel text-[11px] tracking-wider text-dim">
-          THIS MONTH <span className="text-faint">· {label}</span>
+        <h2 className="text-lg font-extrabold tracking-tight text-text">
+          {pretty}
         </h2>
-        <span className="num text-xs text-faint">
+        <span className="num text-xs font-bold text-sub">
           {litDays} day{litDays === 1 ? "" : "s"} lit
         </span>
       </div>
 
-      <div className="num mt-2 grid grid-cols-7 gap-1 text-center text-[10px] text-faint">
+      <div className="num mt-4 grid grid-cols-7 gap-1.5 text-center text-[10px] font-bold text-mute">
         {["M", "T", "W", "T", "F", "S", "S"].map((letter, i) => (
           <span key={i}>{letter}</span>
         ))}
       </div>
 
-      <div className="mt-1 grid grid-cols-7 gap-1">
+      <div className="mt-1.5 grid grid-cols-7 gap-1.5">
         {Array.from({ length: leading }).map((_, i) => (
           <span key={`lead-${i}`} />
         ))}
@@ -50,9 +54,9 @@ export function MonthGrid({
             key={cell.date}
             title={`${cell.date} · level ${cell.level}`}
             data-level={cell.level}
-            className={`aspect-square ${
-              cell.isFuture ? "bg-cell-0/40" : LEVEL_BG[Math.min(cell.level, 4)]
-            } ${cell.isToday ? "outline outline-1 outline-phos" : ""}`}
+            className={`aspect-square rounded-lg ${
+              cell.isFuture ? "bg-cell-0/50" : LEVEL_BG[Math.min(cell.level, 4)]
+            } ${cell.isToday ? "ring-2 ring-accent ring-offset-1 ring-offset-card" : ""}`}
           />
         ))}
       </div>
