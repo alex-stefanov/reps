@@ -5,16 +5,15 @@ import { useFrame } from "@react-three/fiber";
 import * as THREE from "three";
 
 /**
- * The Builder — Reps' character (spec §6.3), at collectible-figure quality:
- * every surface is PBR (MeshPhysicalMaterial) with per-material sheen and
- * clearcoat, silhouettes come from spline-smoothed lathe profiles (no
- * straight cylinder limbs), fabric carries a procedural weave bump, hair is
- * sculpted clumps rather than a helmet, and the whole body casts real soft
- * shadows into the scene.
+ * The Builder — Reps' character, matched to the reference concept: a young
+ * dev with a swept-up quiff, thick rectangular glasses, a green gaming
+ * headset with a mic boom, the brand hoodie with a chest chevron and ribbed
+ * cuffs, slim dark denim with rolled cuffs, and green sneakers. Athletic
+ * stylized proportions (~5.5 heads), one continuous body — no assembled
+ * blocks, no downloaded model.
  *
- * The rig is unchanged: nested groups posed by damped targets per state,
- * ball joints hiding every seam, procedural life on top (breathing, sway,
- * look-around, blinks):
+ * Rig: nested groups posed by damped targets per state, ball joints hiding
+ * seams, procedural life on top (breathing, sway, look-around, blinks):
  *   idle / flourish (task checked) / celebrate (day done) / slump (streak lost)
  */
 
@@ -79,7 +78,7 @@ const POSES: Record<AvatarState, PoseTargets> = {
   },
 };
 
-/** Procedural fabric weave, used as a bump map on hoodie and joggers. */
+/** Procedural fabric weave, used as a bump map on hoodie and denim. */
 function makeWeaveTexture(): THREE.CanvasTexture {
   const size = 64;
   const canvas = document.createElement("canvas");
@@ -102,14 +101,13 @@ function makeWeaveTexture(): THREE.CanvasTexture {
   return tex;
 }
 
-/** Full PBR material set — skin fakes subsurface warmth via sheen. */
 function useMaterials() {
   return useMemo(() => {
     const weave = makeWeaveTexture();
-    const fabric = (color: string, sheenColor: string) =>
+    const fabric = (color: string, sheenColor: string, roughness = 0.82) =>
       new THREE.MeshPhysicalMaterial({
         color,
-        roughness: 0.82,
+        roughness,
         metalness: 0,
         sheen: 0.65,
         sheenColor: new THREE.Color(sheenColor),
@@ -120,12 +118,25 @@ function useMaterials() {
     return {
       hoodie: fabric("#2fbf63", "#8affb0"),
       hoodieDark: fabric("#249c50", "#6ee89a"),
-      joggers: fabric("#2f3138", "#7a8090"),
-      sneaker: new THREE.MeshPhysicalMaterial({
-        color: "#f5f5f7",
-        roughness: 0.35,
+      denim: fabric("#3a3f4a", "#7a8090", 0.78),
+      denimCuff: fabric("#575d69", "#9aa1ae", 0.72),
+      logo: new THREE.MeshPhysicalMaterial({
+        color: "#e4fbee",
+        roughness: 0.5,
+        sheen: 0.5,
+        sheenColor: new THREE.Color("#ffffff"),
+      }),
+      sneakerWhite: new THREE.MeshPhysicalMaterial({
+        color: "#f7f7f9",
+        roughness: 0.32,
         clearcoat: 0.6,
         clearcoatRoughness: 0.25,
+      }),
+      sneakerGreen: new THREE.MeshPhysicalMaterial({
+        color: "#2fae57",
+        roughness: 0.4,
+        clearcoat: 0.5,
+        clearcoatRoughness: 0.3,
       }),
       skin: new THREE.MeshPhysicalMaterial({
         color: "#f3c6a5",
@@ -138,38 +149,64 @@ function useMaterials() {
       }),
       blush: new THREE.MeshPhysicalMaterial({
         color: "#eba98a",
-        roughness: 0.7,
-        sheen: 0.8,
+        roughness: 0.75,
+        sheen: 0.6,
         sheenColor: new THREE.Color("#ff8f6b"),
       }),
       hair: new THREE.MeshPhysicalMaterial({
-        color: "#3a2d20",
-        roughness: 0.42,
+        color: "#4a3826",
+        roughness: 0.4,
         sheen: 1.0,
-        sheenColor: new THREE.Color("#8a6a4a"),
-        sheenRoughness: 0.35,
-        clearcoat: 0.25,
-        clearcoatRoughness: 0.4,
+        sheenColor: new THREE.Color("#a07c50"),
+        sheenRoughness: 0.32,
+        clearcoat: 0.3,
+        clearcoatRoughness: 0.35,
       }),
       plastic: new THREE.MeshPhysicalMaterial({
-        color: "#1d1e23",
+        color: "#23242a",
         roughness: 0.22,
         metalness: 0.08,
         clearcoat: 1.0,
         clearcoatRoughness: 0.14,
       }),
+      cupGreen: new THREE.MeshPhysicalMaterial({
+        color: "#2fae57",
+        roughness: 0.24,
+        clearcoat: 1.0,
+        clearcoatRoughness: 0.15,
+      }),
       accentMetal: new THREE.MeshPhysicalMaterial({
-        color: "#30d158",
-        roughness: 0.28,
-        metalness: 0.55,
+        color: "#bfe9cd",
+        roughness: 0.25,
+        metalness: 0.6,
         clearcoat: 0.8,
         clearcoatRoughness: 0.2,
       }),
-      eye: new THREE.MeshPhysicalMaterial({
-        color: "#1d1e23",
-        roughness: 0.08,
+      sclera: new THREE.MeshPhysicalMaterial({
+        color: "#ffffff",
+        roughness: 0.22,
+        clearcoat: 0.6,
+        clearcoatRoughness: 0.2,
+      }),
+      iris: new THREE.MeshPhysicalMaterial({
+        color: "#3f9b57",
+        roughness: 0.15,
         clearcoat: 1.0,
-        clearcoatRoughness: 0.05,
+        clearcoatRoughness: 0.08,
+      }),
+      ink: new THREE.MeshPhysicalMaterial({
+        color: "#1d1e23",
+        roughness: 0.15,
+        clearcoat: 0.9,
+        clearcoatRoughness: 0.1,
+      }),
+      lens: new THREE.MeshPhysicalMaterial({
+        color: "#dcecff",
+        roughness: 0.05,
+        transparent: true,
+        opacity: 0.16,
+        clearcoat: 1.0,
+        clearcoatRoughness: 0.03,
       }),
       white: new THREE.MeshPhysicalMaterial({ color: "#ffffff", roughness: 0.2 }),
     };
@@ -198,8 +235,8 @@ function useBodyGeometry() {
         [0.11, -0.075],
         [0.165, -0.03],
         [0.185, 0.03],
-        [0.168, 0.15],
-        [0.178, 0.26],
+        [0.166, 0.15],
+        [0.176, 0.26],
         [0.198, 0.37],
         [0.2, 0.43],
         [0.17, 0.49],
@@ -210,7 +247,6 @@ function useBodyGeometry() {
       36,
       48,
     );
-    // Limbs taper along their length — shoulder→wrist, hip→ankle.
     const upperArm = splineLathe(
       [
         [0.001, 0.04],
@@ -235,48 +271,60 @@ function useBodyGeometry() {
       20,
       28,
     );
+    // Slim denim: long thigh and calf for ~5.5-head proportions.
     const thigh = splineLathe(
       [
         [0.001, 0.05],
-        [0.084, 0.02],
-        [0.086, -0.08],
-        [0.072, -0.2],
-        [0.062, -0.3],
-        [0.001, -0.33],
+        [0.086, 0.02],
+        [0.088, -0.1],
+        [0.07, -0.27],
+        [0.06, -0.4],
+        [0.001, -0.43],
       ],
-      22,
+      24,
       28,
     );
     const calf = splineLathe(
       [
         [0.001, 0.03],
         [0.062, 0.0],
-        [0.066, -0.07],
-        [0.05, -0.18],
-        [0.042, -0.26],
-        [0.001, -0.28],
+        [0.066, -0.1],
+        [0.05, -0.25],
+        [0.042, -0.34],
+        [0.001, -0.37],
       ],
-      22,
+      24,
       28,
     );
-    return { torso, upperArm, forearm, thigh, calf };
+    // Mic boom: a smooth tube from the right cup toward the mouth.
+    const micCurve = new THREE.CatmullRomCurve3([
+      new THREE.Vector3(0.185, 0.12, 0.04),
+      new THREE.Vector3(0.165, 0.06, 0.13),
+      new THREE.Vector3(0.105, 0.05, 0.185),
+    ]);
+    const micBoom = new THREE.TubeGeometry(micCurve, 16, 0.009, 8);
+    return { torso, upperArm, forearm, thigh, calf, micBoom };
   }, []);
 }
 
-/** Sculpted hair: overlapping clumps along the crown and fringe. */
+/** Swept-up quiff: clumps rising at the front, short sides, full crown. */
 const HAIR_CLUMPS: {
   pos: [number, number, number];
   scale: [number, number, number];
   rot: [number, number, number];
 }[] = [
-  { pos: [0, 0.3, -0.02], scale: [1.02, 0.72, 1.0], rot: [-0.2, 0, 0] },
-  { pos: [0, 0.2, -0.1], scale: [0.95, 0.85, 0.7], rot: [0.15, 0, 0] },
-  { pos: [0.1, 0.31, 0.1], scale: [0.62, 0.34, 0.55], rot: [0.45, 0.3, -0.12] },
-  { pos: [-0.07, 0.32, 0.11], scale: [0.55, 0.3, 0.5], rot: [0.5, -0.25, 0.1] },
-  { pos: [0.03, 0.34, 0.02], scale: [0.7, 0.4, 0.66], rot: [0.1, 0.15, 0.06] },
-  { pos: [0.15, 0.22, 0.02], scale: [0.38, 0.5, 0.52], rot: [0, 0.3, -0.25] },
-  { pos: [-0.15, 0.22, 0.01], scale: [0.38, 0.52, 0.5], rot: [0, -0.3, 0.25] },
-  { pos: [0.09, 0.28, 0.14], scale: [0.42, 0.24, 0.4], rot: [0.65, 0.2, -0.3] },
+  { pos: [0, 0.185, -0.085], scale: [0.92, 0.8, 0.72], rot: [0.15, 0, 0] },
+  { pos: [0, 0.3, -0.04], scale: [0.95, 0.62, 0.88], rot: [-0.12, 0, 0] },
+  { pos: [0.15, 0.21, 0], scale: [0.34, 0.5, 0.48], rot: [0, 0.25, -0.15] },
+  { pos: [-0.15, 0.21, 0], scale: [0.34, 0.5, 0.48], rot: [0, -0.25, 0.15] },
+  { pos: [0.01, 0.35, 0.09], scale: [0.8, 0.5, 0.62], rot: [-0.35, 0, 0.05] },
+  { pos: [0.03, 0.4, 0.12], scale: [0.6, 0.46, 0.45], rot: [-0.55, 0.1, -0.08] },
+  { pos: [0.06, 0.42, 0.15], scale: [0.4, 0.34, 0.32], rot: [-0.75, 0.15, -0.15] },
+  { pos: [-0.06, 0.365, 0.13], scale: [0.5, 0.34, 0.4], rot: [-0.6, -0.15, 0.12] },
+  // low fringe along the hairline so the forehead isn't a dome
+  { pos: [0, 0.315, 0.125], scale: [0.78, 0.3, 0.42], rot: [-0.3, 0, 0] },
+  { pos: [0.11, 0.3, 0.1], scale: [0.4, 0.3, 0.38], rot: [-0.25, 0.25, -0.2] },
+  { pos: [-0.11, 0.3, 0.1], scale: [0.4, 0.3, 0.38], rot: [-0.25, -0.25, 0.2] },
 ];
 
 export function Builder({ state }: { state: AvatarState }) {
@@ -297,7 +345,6 @@ export function Builder({ state }: { state: AvatarState }) {
   const m = useMaterials();
   const geo = useBodyGeometry();
 
-  // Every mesh in the body casts into the soft shadow pipeline.
   useEffect(() => {
     root.current?.traverse((obj) => {
       if (obj instanceof THREE.Mesh) obj.castShadow = true;
@@ -367,13 +414,41 @@ export function Builder({ state }: { state: AvatarState }) {
     }
   });
 
+  /** Full eye: sclera, green iris, pupil, catchlight — blinks as a group. */
   const eye = (side: 1 | -1, ref: React.RefObject<THREE.Group | null>) => (
-    <group ref={ref} position={[side * 0.072, 0.19, 0.165]}>
-      <mesh material={m.eye} scale={[1, 1.4, 0.55]}>
-        <sphereGeometry args={[0.026, 20, 20]} />
+    <group ref={ref} position={[side * 0.072, 0.19, 0.162]}>
+      <mesh material={m.sclera} scale={[1, 1.3, 0.5]}>
+        <sphereGeometry args={[0.034, 22, 22]} />
       </mesh>
-      <mesh material={m.white} position={[0.008, 0.012, 0.012]}>
-        <sphereGeometry args={[0.007, 10, 10]} />
+      <mesh material={m.iris} position={[0, 0, 0.013]} scale={[1, 1, 0.5]}>
+        <sphereGeometry args={[0.0175, 18, 18]} />
+      </mesh>
+      <mesh material={m.ink} position={[0, 0, 0.021]} scale={[1, 1, 0.5]}>
+        <sphereGeometry args={[0.0085, 12, 12]} />
+      </mesh>
+      <mesh material={m.white} position={[0.007, 0.007, 0.026]}>
+        <sphereGeometry args={[0.0045, 8, 8]} />
+      </mesh>
+    </group>
+  );
+
+  /** Thick rectangular frame: four bars + glass lens per eye. */
+  const spectacle = (side: 1 | -1) => (
+    <group key={side} position={[side * 0.074, 0.192, 0.188]}>
+      <mesh material={m.plastic} position={[0, 0.034, 0]}>
+        <boxGeometry args={[0.098, 0.013, 0.015]} />
+      </mesh>
+      <mesh material={m.plastic} position={[0, -0.034, 0]}>
+        <boxGeometry args={[0.098, 0.013, 0.015]} />
+      </mesh>
+      <mesh material={m.plastic} position={[side * 0.046, 0, 0]}>
+        <boxGeometry args={[0.013, 0.078, 0.015]} />
+      </mesh>
+      <mesh material={m.plastic} position={[side * -0.046, 0, 0]}>
+        <boxGeometry args={[0.013, 0.078, 0.015]} />
+      </mesh>
+      <mesh material={m.lens}>
+        <boxGeometry args={[0.082, 0.056, 0.004]} />
       </mesh>
     </group>
   );
@@ -383,7 +458,7 @@ export function Builder({ state }: { state: AvatarState }) {
     groupRef: React.RefObject<THREE.Group | null>,
     elbowRef: React.RefObject<THREE.Group | null>,
   ) => (
-    <group ref={groupRef} position={[side * 0.182, 0.44, 0]}>
+    <group ref={groupRef} position={[side * 0.19, 0.44, 0]}>
       <mesh material={m.hoodie}>
         <sphereGeometry args={[0.068, 24, 24]} />
       </mesh>
@@ -393,7 +468,12 @@ export function Builder({ state }: { state: AvatarState }) {
           <sphereGeometry args={[0.056, 22, 22]} />
         </mesh>
         <mesh material={m.hoodie} geometry={geo.forearm} position={[0, -0.03, 0]} />
-        <mesh material={m.skin} position={[0, -0.225, 0.01]} scale={[0.92, 1.15, 0.95]}>
+        {/* ribbed cuff */}
+        <mesh material={m.hoodieDark} position={[0, -0.175, 0]} rotation={[Math.PI / 2, 0, 0]}>
+          <torusGeometry args={[0.041, 0.012, 8, 24]} />
+        </mesh>
+        {/* fist */}
+        <mesh material={m.skin} position={[0, -0.23, 0.01]} scale={[0.95, 1.05, 0.9]}>
           <sphereGeometry args={[0.058, 24, 24]} />
         </mesh>
       </group>
@@ -401,33 +481,56 @@ export function Builder({ state }: { state: AvatarState }) {
   );
 
   const leg = (side: 1 | -1) => (
-    <group position={[side * 0.096, -0.045, 0]}>
-      <mesh material={m.joggers}>
-        <sphereGeometry args={[0.085, 22, 22]} />
+    <group position={[side * 0.098, -0.045, 0]}>
+      <mesh material={m.denim}>
+        <sphereGeometry args={[0.088, 22, 22]} />
       </mesh>
-      <mesh material={m.joggers} geometry={geo.thigh} position={[0, -0.06, 0]} />
-      <mesh material={m.joggers} position={[0, -0.41, 0.005]}>
-        <sphereGeometry args={[0.07, 22, 22]} />
+      <mesh material={m.denim} geometry={geo.thigh} position={[0, -0.05, 0]} />
+      <mesh material={m.denim} position={[0, -0.51, 0.005]}>
+        <sphereGeometry args={[0.068, 22, 22]} />
       </mesh>
-      <mesh material={m.joggers} geometry={geo.calf} position={[0, -0.46, 0]} />
-      <mesh material={m.sneaker} position={[0, -0.865, 0.02]} scale={[1, 0.75, 1.45]}>
-        <sphereGeometry args={[0.075, 24, 24]} />
+      <mesh material={m.denim} geometry={geo.calf} position={[0, -0.56, 0]} />
+      {/* rolled cuff */}
+      <mesh material={m.denimCuff} position={[0, -0.925, 0]}>
+        <cylinderGeometry args={[0.055, 0.058, 0.055, 20]} />
       </mesh>
-      <mesh material={m.sneaker} position={[0, -0.885, 0.1]} scale={[0.9, 0.55, 1]}>
-        <sphereGeometry args={[0.068, 20, 20]} />
-      </mesh>
+      {/* green sneaker: white sole, green upper, white toe */}
+      <group position={[0, -1.0, 0]}>
+        <mesh
+          material={m.sneakerWhite}
+          position={[0, -0.03, 0.03]}
+          rotation={[Math.PI / 2, 0, 0]}
+          scale={[1, 1.25, 0.55]}
+        >
+          <capsuleGeometry args={[0.058, 0.1, 8, 18]} />
+        </mesh>
+        <mesh material={m.sneakerGreen} position={[0, 0.01, 0.03]} scale={[0.95, 0.75, 1.4]}>
+          <sphereGeometry args={[0.062, 22, 22]} />
+        </mesh>
+        <mesh material={m.sneakerWhite} position={[0, -0.01, 0.135]} scale={[0.75, 0.55, 0.8]}>
+          <sphereGeometry args={[0.048, 18, 18]} />
+        </mesh>
+        {/* lace hint */}
+        <mesh material={m.white} position={[0, 0.045, 0.075]} rotation={[0.5, 0, Math.PI / 2]}>
+          <capsuleGeometry args={[0.006, 0.05, 4, 8]} />
+        </mesh>
+      </group>
     </group>
   );
 
   return (
     <group ref={root}>
-      <group ref={hips} position={[0, 0.98, 0]}>
+      <group ref={hips} position={[0, 1.08, 0]}>
         {leg(1)}
         {leg(-1)}
 
         <group ref={spine}>
           <group ref={chest}>
             <mesh material={m.hoodie} geometry={geo.torso} />
+            {/* ribbed hem */}
+            <mesh material={m.hoodieDark} position={[0, -0.062, 0]} rotation={[Math.PI / 2, 0, 0]}>
+              <torusGeometry args={[0.155, 0.02, 8, 36]} />
+            </mesh>
             {/* hood volume behind the neck */}
             <mesh
               material={m.hoodieDark}
@@ -436,7 +539,7 @@ export function Builder({ state }: { state: AvatarState }) {
             >
               <sphereGeometry args={[0.105, 24, 24]} />
             </mesh>
-            {/* pocket */}
+            {/* kangaroo pocket */}
             <mesh
               material={m.hoodieDark}
               position={[0, 0.06, 0.168]}
@@ -448,20 +551,29 @@ export function Builder({ state }: { state: AvatarState }) {
             {([1, -1] as const).map((side) => (
               <mesh
                 key={side}
-                material={m.sneaker}
+                material={m.white}
                 position={[side * 0.06, 0.42, 0.185]}
                 rotation={[0.14, 0, side * -0.06]}
               >
                 <capsuleGeometry args={[0.01, 0.09, 6, 12]} />
               </mesh>
             ))}
+            {/* chest chevron logo */}
+            <group position={[0.085, 0.315, 0.178]} rotation={[0.12, 0.1, 0]}>
+              <mesh material={m.logo} position={[0, 0.013, 0]} rotation={[0, 0, 0.75]}>
+                <capsuleGeometry args={[0.0075, 0.036, 4, 10]} />
+              </mesh>
+              <mesh material={m.logo} position={[0, -0.013, 0]} rotation={[0, 0, -0.75]}>
+                <capsuleGeometry args={[0.0075, 0.036, 4, 10]} />
+              </mesh>
+            </group>
           </group>
 
           {arm(1, lSh, lEl)}
           {arm(-1, rSh, rEl)}
 
-          {/* neck + head */}
-          <group ref={head} position={[0, 0.56, 0]}>
+          {/* neck + head (scaled for taller proportions) */}
+          <group ref={head} position={[0, 0.575, 0]} scale={0.9}>
             <mesh material={m.skin} position={[0, 0.02, 0]}>
               <cylinderGeometry args={[0.058, 0.066, 0.1, 24]} />
             </mesh>
@@ -469,7 +581,7 @@ export function Builder({ state }: { state: AvatarState }) {
               <sphereGeometry args={[0.195, 40, 40]} />
             </mesh>
 
-            {/* sculpted hair clumps */}
+            {/* quiff */}
             {HAIR_CLUMPS.map((clump, i) => (
               <mesh
                 key={i}
@@ -489,42 +601,59 @@ export function Builder({ state }: { state: AvatarState }) {
               <mesh
                 key={side}
                 material={m.hair}
-                position={[side * 0.074, 0.245, 0.163]}
-                rotation={[0.1, 0, side * -0.12 + Math.PI / 2]}
+                position={[side * 0.074, 0.252, 0.163]}
+                rotation={[0.1, 0, side * -0.05 + Math.PI / 2]}
               >
-                <capsuleGeometry args={[0.009, 0.038, 6, 12]} />
+                <capsuleGeometry args={[0.0105, 0.042, 6, 12]} />
               </mesh>
             ))}
-            <mesh material={m.skin} position={[0, 0.155, 0.185]} scale={[0.9, 1.1, 0.8]}>
+            <mesh material={m.skin} position={[0, 0.15, 0.185]} scale={[0.9, 1.1, 0.8]}>
               <sphereGeometry args={[0.02, 16, 16]} />
             </mesh>
             <mesh
               ref={mouth}
-              material={m.eye}
-              position={[0, 0.115, 0.168]}
+              material={m.ink}
+              position={[0, 0.105, 0.172]}
               rotation={[0.25, 0, Math.PI + 0.85]}
               scale={[1, 1, 0.5]}
             >
-              <torusGeometry args={[0.042, 0.0085, 10, 26, 1.7]} />
+              <torusGeometry args={[0.038, 0.008, 10, 26, 1.6]} />
             </mesh>
             {([1, -1] as const).map((side) => (
               <mesh
                 key={side}
                 material={m.blush}
-                position={[side * 0.115, 0.125, 0.145]}
-                scale={[1, 0.65, 0.35]}
+                position={[side * 0.112, 0.115, 0.148]}
+                scale={[0.8, 0.5, 0.3]}
               >
-                <sphereGeometry args={[0.028, 16, 16]} />
+                <sphereGeometry args={[0.026, 16, 16]} />
               </mesh>
             ))}
 
-            {/* headphones — glossy plastic band, metal accent rings */}
+            {/* glasses */}
+            {spectacle(1)}
+            {spectacle(-1)}
+            <mesh material={m.plastic} position={[0, 0.198, 0.192]}>
+              <boxGeometry args={[0.028, 0.012, 0.013]} />
+            </mesh>
+            {([1, -1] as const).map((side) => (
+              <mesh
+                key={side}
+                material={m.plastic}
+                position={[side * 0.148, 0.192, 0.095]}
+                rotation={[0, side * -1.1, 0]}
+              >
+                <boxGeometry args={[0.012, 0.011, 0.2]} />
+              </mesh>
+            ))}
+
+            {/* headset: dark band, green cups, metal rings, mic boom */}
             <mesh material={m.plastic} position={[0, 0.19, 0]}>
               <torusGeometry args={[0.215, 0.02, 12, 40, Math.PI]} />
             </mesh>
             {([1, -1] as const).map((side) => (
               <group key={side} position={[side * 0.192, 0.165, 0]}>
-                <mesh material={m.plastic} rotation={[0, 0, Math.PI / 2]}>
+                <mesh material={m.cupGreen} rotation={[0, 0, Math.PI / 2]}>
                   <cylinderGeometry args={[0.068, 0.068, 0.055, 28]} />
                 </mesh>
                 <mesh
@@ -536,6 +665,10 @@ export function Builder({ state }: { state: AvatarState }) {
                 </mesh>
               </group>
             ))}
+            <mesh material={m.plastic} geometry={geo.micBoom} />
+            <mesh material={m.cupGreen} position={[0.105, 0.05, 0.185]}>
+              <sphereGeometry args={[0.016, 14, 14]} />
+            </mesh>
           </group>
         </group>
       </group>

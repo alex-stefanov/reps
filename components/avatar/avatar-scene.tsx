@@ -1,30 +1,24 @@
 "use client";
 
 import { Suspense, useMemo, useState } from "react";
-import { Environment, Lightformer } from "@react-three/drei";
-import { Canvas, useFrame } from "@react-three/fiber";
 import {
-  Bloom,
-  DepthOfField,
-  EffectComposer,
-  N8AO,
-} from "@react-three/postprocessing";
+  Environment,
+  Lightformer,
+  PresentationControls,
+} from "@react-three/drei";
+import { Canvas } from "@react-three/fiber";
 import * as THREE from "three";
 import type { SceneDay } from "@/lib/server/home-view";
 import { BlobShadow } from "./blob-shadow";
 import { Builder, type AvatarState } from "./builder";
-import { WeekPath } from "./week-path";
+import { Podium } from "./podium";
 
 /**
- * Rendering pipeline for the hero scene, tuned for "digital collectible"
- * quality on integrated GPUs:
- *  - image-based lighting from a procedural Lightformer studio (PMREM under
- *    the hood via drei's Environment — no runtime HDRI download to fail)
- *  - three-point light rig; only the key casts, PCFSoft, 1024 map
- *  - ACES filmic tone mapping (R3F default) + post: N8AO ambient occlusion,
- *    subtle bloom on emissive highlights, gentle depth of field that keeps
- *    the character crisp and softens the island edges
- *  - soft radial-gradient backdrop instead of a flat pastel fill
+ * The hero scene: a fully 3D character stand you can grab and turn.
+ * Drag rotates the whole diorama (spring-loaded, snaps back upright);
+ * rendering stays crisp and fast — PBR materials, image-based lighting
+ * from a procedural PMREM studio, PCFSoft shadows, ACES tone mapping,
+ * and deliberately NO post-processing blur passes.
  */
 
 function Backdrop() {
@@ -52,18 +46,11 @@ function Backdrop() {
     return tex;
   }, []);
 
-  // Declarative scene.background — R3F detaches it on unmount.
   return <primitive object={texture} attach="background" />;
 }
 
-/**
- * Quality gate: the full pipeline (AO, bloom, DoF, soft shadows) assumes a
- * real GPU. Software renderers (SwiftShader/llvmpipe — headless browsers,
- * VMs, GPU-blocklisted machines) get the plain forward path instead of a
- * slideshow.
- */
+/** Software renderers get the plain forward path instead of a slideshow. */
 function useHasRealGpu(): boolean {
-  // Lazy one-shot detection: this component is client-only (ssr:false).
   const [hasGpu] = useState(() => {
     if (typeof document === "undefined") return true;
     try {
@@ -81,74 +68,37 @@ function useHasRealGpu(): boolean {
   return hasGpu;
 }
 
-/** Soft pointer parallax — the scene leans with the cursor, iOS-style. */
-function Rig() {
-  useFrame(({ camera, pointer }, delta) => {
-    camera.position.x = THREE.MathUtils.damp(
-      camera.position.x,
-      pointer.x * 0.45,
-      3,
-      delta,
-    );
-    camera.position.y = THREE.MathUtils.damp(
-      camera.position.y,
-      1.3 + pointer.y * 0.22,
-      3,
-      delta,
-    );
-    camera.lookAt(0, 0.8, 0);
-  });
-  return null;
-}
-
 export default function AvatarScene({
   state,
   week,
-  todayIndex,
+  doneCount,
+  totalCount,
 }: {
   state: AvatarState;
   week: SceneDay[];
-  todayIndex: number;
+  doneCount: number;
+  totalCount: number;
 }) {
   const fullQuality = useHasRealGpu();
+  const doneRatio = totalCount > 0 ? doneCount / totalCount : 0;
 
   return (
     <Canvas
       shadows={fullQuality ? "soft" : false}
-      dpr={fullQuality ? [1, 1.75] : 1}
+      dpr={fullQuality ? [1, 2] : 1}
       gl={{ antialias: true }}
-      camera={{ position: [0, 1.3, 4.7], fov: 36 }}
+      camera={{ position: [0, 0.15, 4.6], fov: 34 }}
       style={{ touchAction: "pan-y" }}
-      aria-label="Your builder standing on this week's path"
+      aria-label="Your builder on the progress podium — drag to turn"
     >
       <Backdrop />
 
       {/* Image-based lighting: a procedural studio, PMREM'd by drei. */}
       <Environment resolution={128} frames={1}>
-        <Lightformer
-          intensity={1.6}
-          position={[0, 5, 3]}
-          scale={[7, 3, 1]}
-          color="#ffffff"
-        />
-        <Lightformer
-          intensity={0.9}
-          position={[-5, 2, 2]}
-          scale={[3, 3, 1]}
-          color="#eaf2ff"
-        />
-        <Lightformer
-          intensity={1.1}
-          position={[5, 3, -2]}
-          scale={[3, 4, 1]}
-          color="#e2ffe9"
-        />
-        <Lightformer
-          intensity={0.7}
-          position={[0, 2, -6]}
-          scale={[10, 2, 1]}
-          color="#d6e9ff"
-        />
+        <Lightformer intensity={1.6} position={[0, 5, 3]} scale={[7, 3, 1]} color="#ffffff" />
+        <Lightformer intensity={0.9} position={[-5, 2, 2]} scale={[3, 3, 1]} color="#eaf2ff" />
+        <Lightformer intensity={1.1} position={[5, 3, -2]} scale={[3, 4, 1]} color="#e2ffe9" />
+        <Lightformer intensity={0.7} position={[0, 2, -6]} scale={[10, 2, 1]} color="#d6e9ff" />
       </Environment>
 
       {/* Three-point rig; the key casts soft shadows. */}
@@ -169,27 +119,23 @@ export default function AvatarScene({
       <directionalLight position={[-4, 2.5, 3]} intensity={0.5} color="#dfe8ff" />
       <directionalLight position={[0, 2.5, -5]} intensity={0.9} color="#d6ffe4" />
 
-      <Suspense fallback={null}>
-        <Builder state={state} />
-        <WeekPath week={week} todayIndex={todayIndex} />
-        {/* faint contact blob under the feet, on top of real shadows */}
-        <BlobShadow position={[0, 0.012, 0]} scale={0.6} opacity={0.14} />
-      </Suspense>
-
-      {fullQuality && (
-        <EffectComposer multisampling={4}>
-          <N8AO halfRes aoRadius={0.45} intensity={2.2} distanceFalloff={0.6} />
-          <Bloom mipmapBlur luminanceThreshold={1.0} intensity={0.45} />
-          <DepthOfField
-            target={[0, 1.1, 0]}
-            focalLength={0.01}
-            bokehScale={1.8}
-            height={480}
-          />
-        </EffectComposer>
-      )}
-
-      <Rig />
+      {/* Grab-and-turn: rotates around the character's chest, springs back. */}
+      <PresentationControls
+        global
+        cursor
+        snap
+        speed={1.4}
+        polar={[-0.12, 0.22]}
+        azimuth={[-Math.PI / 2.2, Math.PI / 2.2]}
+      >
+        <group position={[0, -1.02, 0]}>
+          <Suspense fallback={null}>
+            <Builder state={state} />
+            <Podium week={week} doneRatio={doneRatio} />
+            <BlobShadow position={[0, 0.012, 0]} scale={0.55} opacity={0.13} />
+          </Suspense>
+        </group>
+      </PresentationControls>
     </Canvas>
   );
 }

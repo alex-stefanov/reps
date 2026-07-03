@@ -35,14 +35,12 @@ function dayLetter(dateISO: string): string {
 
 export function CharacterScene({
   week,
-  todayIndex,
   doneCount,
   totalCount,
   streak,
   justLost,
 }: {
   week: SceneDay[];
-  todayIndex: number;
   doneCount: number;
   totalCount: number;
   streak: number;
@@ -96,7 +94,12 @@ export function CharacterScene({
       </div>
 
       <div className="h-72 sm:h-80" data-avatar-state={state}>
-        <AvatarScene state={state} week={week} todayIndex={todayIndex} />
+        <AvatarScene
+          state={state}
+          week={week}
+          doneCount={doneCount}
+          totalCount={totalCount}
+        />
       </div>
 
       {/* DOM mirror of the week path */}

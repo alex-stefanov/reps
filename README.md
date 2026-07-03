@@ -16,9 +16,9 @@ Per spec §16, only Phase 1 exists so far, and it's complete:
   handle that commit verification reads.
 - **Onboarding** — hours/week + intensity (chill/steady/grind) + track
   toggles → generates a dated 12-week program.
-- **Home ("Day X")** — today's task blobs from the schedule + standing
-  tasks, live "1/3" counter, the character on the week-strip terrain,
-  month contribution grid, icon rail, Plan button.
+- **Home ("Day X")** — today's tasks from the schedule + standing tasks,
+  the completion ring, the 3D character on its progress podium, month
+  contribution grid, hub row, Plan card.
 - **Schedule** — iOS-style day cards with a week pager: tap-to-complete
   task rows, hour steppers, add/remove tasks, notes, multi-select
   mark-done, bottom-sheet regeneration. Future days are plannable but
@@ -26,10 +26,10 @@ Per spec §16, only Phase 1 exists so far, and it's complete:
 - **GitHub commit verification** — sync on app open + a cron backstop
   every 30 min. Found commit → Commit checks itself off. No commit → it
   stays pending; there is **no manual override** while the toggle is on.
-- **Character** — a procedural 3D clay person (react-three-fiber) with a
+- **Character** — a procedural stylized 3D dev (react-three-fiber) with a
   posed skeleton: idle (breathing, blinks, look-around), task-done
-  flourish, all-done celebration, streak-loss slump — standing on the
-  week's stepping-stone diorama.
+  flourish, all-done celebration, streak-loss slump — on a draggable
+  display podium with the week floating behind as a halo of orbs.
 - **Settings** — LeetCode / Gym / daily-commit toggles that genuinely
   remove tracks from tasks, Schedule columns, *and* stats; timezone
   (defines the "today" verification boundary); sign out.
@@ -132,19 +132,22 @@ headphones with accent-ring cups, blinking eyes, breathing, weight shift.
 Real pose states, not color swaps: idle / flourish (task checked: jump,
 arms up, happy squint) / celebrate (day complete) / slump (streak lost).
 
-Rendering is a real PBR pipeline: MeshPhysicalMaterial everywhere (fabric
-sheen + procedural weave bump, skin with subsurface-style sheen, clearcoat
-plastics and metals), image-based lighting from a procedural PMREM studio
-(no HDRI download to fail offline), PCFSoft three-point shadows, and a
-post stack — N8AO ambient occlusion, subtle bloom, gentle depth of field —
-under ACES filmic tone mapping. Software-GL clients are detected and get
-a plain forward path instead of a slideshow.
+Rendering is a real PBR pipeline kept deliberately crisp: MeshPhysical-
+Material everywhere (fabric sheen + procedural weave bump, skin with
+subsurface-style sheen, clearcoat plastics and metals, glass lenses),
+image-based lighting from a procedural PMREM studio (no HDRI download to
+fail offline), PCFSoft three-point shadows, ACES filmic tone mapping —
+and no post-processing blur passes. The scene is fully 3D: grab and drag
+to orbit the character (spring-loaded, snaps back). Software-GL clients
+are detected and get a plain forward path instead of a slideshow.
 
-The signature element survived the redesign: **the character lives on the
-grid** — the current week is a path of 3D clay tiles it stands on. Today's
-tile glows greener as tasks complete, broken days sink into the floor, and
-the daily "1/3" is an Apple-Fitness-style ring. The Schedule is iOS day
-cards with a bottom-sheet regenerate flow instead of a data table.
+Progress lives in the scene as **the Podium**: the character stands on a
+collectible-figure display stand whose rim carries a glowing arc that
+fills as today's tasks complete, while the week floats behind as a halo
+of orbs — green when a day was fully completed, frosted glass for future
+days, dark for missed ones, today pulsing. The daily "1/3" is an
+Apple-Fitness-style ring; the Schedule is iOS day cards with a
+bottom-sheet regenerate flow instead of a data table.
 
 ## Deploying
 

@@ -67,7 +67,6 @@ export default async function HomePage() {
       <div className="mt-5">
         <CharacterScene
           week={view.week}
-          todayIndex={view.todayIndex}
           doneCount={view.doneCount}
           totalCount={view.totalCount}
           streak={view.streak.current}
