@@ -1,24 +1,18 @@
 "use client";
 
-import dynamic from "next/dynamic";
 import { useEffect, useRef, useState } from "react";
 import type { SceneDay } from "@/lib/server/home-view";
-import type { AvatarState } from "./avatar/builder";
+import {
+  CharacterPortrait,
+  type AvatarState,
+} from "./character-portrait";
 
 /**
- * The hero: a 3D scene in a glass card. The character lives on the week's
- * 3D path; the capsule strip below mirrors it in DOM (and carries the
- * level classes the e2e suite asserts against).
+ * The hero: the cinematic character portrait in a card, with the streak
+ * pill and the week strip. State logic lives here: celebrate when today is
+ * done, slump when a streak just broke, a transient flourish when a task
+ * gets checked, idle otherwise.
  */
-
-const AvatarScene = dynamic(() => import("./avatar/avatar-scene"), {
-  ssr: false,
-  loading: () => (
-    <div className="flex h-full items-center justify-center">
-      <div className="size-16 animate-pulse-dot rounded-full bg-cell-1" />
-    </div>
-  ),
-});
 
 const LEVEL_BG = [
   "bg-cell-0",
@@ -39,12 +33,14 @@ export function CharacterScene({
   totalCount,
   streak,
   justLost,
+  commitVerified,
 }: {
   week: SceneDay[];
   doneCount: number;
   totalCount: number;
   streak: number;
   justLost: boolean;
+  commitVerified: boolean;
 }) {
   const baseState: AvatarState =
     totalCount > 0 && doneCount >= totalCount
@@ -59,7 +55,7 @@ export function CharacterScene({
   useEffect(() => {
     if (doneCount > prevDone.current && baseState !== "celebrate") {
       setFlourishing(true);
-      const t = setTimeout(() => setFlourishing(false), 1600);
+      const t = setTimeout(() => setFlourishing(false), 2200);
       return () => clearTimeout(t);
     }
     prevDone.current = doneCount;
@@ -74,7 +70,7 @@ export function CharacterScene({
   return (
     <section
       aria-label="Character and current week"
-      className="card-shadow-lg relative overflow-hidden rounded-[2rem] bg-gradient-to-b from-[#eef6ff] via-[#f2f7f3] to-[#e9f7ee]"
+      className="card-shadow-lg relative overflow-hidden rounded-[2rem] bg-[#e9eaec]"
     >
       {/* Streak pill */}
       <div className="absolute right-4 top-4 z-10">
@@ -93,17 +89,12 @@ export function CharacterScene({
         )}
       </div>
 
-      <div className="h-72 sm:h-80" data-avatar-state={state}>
-        <AvatarScene
-          state={state}
-          week={week}
-          doneCount={doneCount}
-          totalCount={totalCount}
-        />
+      <div className="h-[26rem]" data-avatar-state={state}>
+        <CharacterPortrait state={state} commitVerified={commitVerified} />
       </div>
 
-      {/* DOM mirror of the week path */}
-      <div className="grid grid-cols-7 gap-1.5 px-5 pb-5">
+      {/* the week strip */}
+      <div className="glass relative grid grid-cols-7 gap-1.5 px-5 pb-4 pt-3">
         {week.map((day) => (
           <div key={day.date} className="flex flex-col items-center gap-1.5">
             <div

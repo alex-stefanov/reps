@@ -71,6 +71,7 @@ export default async function HomePage() {
           totalCount={view.totalCount}
           streak={view.streak.current}
           justLost={view.streak.justLost}
+          commitVerified={view.verification.state === "verified"}
         />
       </div>
 

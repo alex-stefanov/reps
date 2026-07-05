@@ -126,28 +126,22 @@ white cards with diffuse depth, frosted glass, hairline separators, the iOS
 system palette for track colors, Manrope with tabular numerals, spring
 physics on every interaction (framer-motion).
 
-The character is a **procedural 3D clay person** built entirely in code
-(three.js / react-three-fiber — no downloaded model): brand-green hoodie,
-headphones with accent-ring cups, blinking eyes, breathing, weight shift.
-Real pose states, not color swaps: idle / flourish (task checked: jump,
-arms up, happy squint) / celebrate (day complete) / slump (streak lost).
+The character is **pre-rendered cinematic art with a live 2.5D layer**
+(v3 — after honestly concluding that real-time browser 3D could not reach
+the Pixar-grade bar this product's emotional core demands). Six offline-
+render-quality portraits — idle, flourish, celebrate, slump, wink, and a
+hands-in-pockets rest — are cross-faded by a spring state machine, with
+life composited on top in real time: a breathing loop, pointer parallax
+with depth (the blurred backdrop drifts slower than the figure), an idle
+fidget he settles into every few seconds, and a wink when you tap him or
+when a commit gets verified. Source art lives outside the repo; a small
+pipeline script (scripts/prepare-character.py) erases watermarks and emits
+the ~30KB WebP each state ships as. The whole three.js stack is gone —
+the hero is now ~190KB of images and a few springs.
 
-Rendering is a real PBR pipeline kept deliberately crisp: MeshPhysical-
-Material everywhere (fabric sheen + procedural weave bump, skin with
-subsurface-style sheen, clearcoat plastics and metals, glass lenses),
-image-based lighting from a procedural PMREM studio (no HDRI download to
-fail offline), PCFSoft three-point shadows, ACES filmic tone mapping —
-and no post-processing blur passes. The scene is fully 3D: grab and drag
-to orbit the character (spring-loaded, snaps back). Software-GL clients
-are detected and get a plain forward path instead of a slideshow.
-
-Progress lives in the scene as **the Podium**: the character stands on a
-collectible-figure display stand whose rim carries a glowing arc that
-fills as today's tasks complete, while the week floats behind as a halo
-of orbs — green when a day was fully completed, frosted glass for future
-days, dark for missed ones, today pulsing. The daily "1/3" is an
-Apple-Fitness-style ring; the Schedule is iOS day cards with a
-bottom-sheet regenerate flow instead of a data table.
+The daily "1/3" is an Apple-Fitness-style ring; the week strip under the
+portrait carries the same completion levels; the Schedule is iOS day
+cards with a bottom-sheet regenerate flow instead of a data table.
 
 ## Deploying
 
