@@ -2,7 +2,7 @@
 
 **The daily loop, verified.** A character-driven personal operating system for
 becoming a real software engineer: a generated plan says what today should
-contain, a 3D character lives on your week's path, and the daily
+contain, a cinematic character reacts to how the day goes, and the daily
 Commit task only checks off when a **real public GitHub commit** exists — the
 app refuses to let you lie to yourself.
 
@@ -17,8 +17,8 @@ Per spec §16, only Phase 1 exists so far, and it's complete:
 - **Onboarding** — hours/week + intensity (chill/steady/grind) + track
   toggles → generates a dated 12-week program.
 - **Home ("Day X")** — today's tasks from the schedule + standing tasks,
-  the completion ring, the 3D character on its progress podium, month
-  contribution grid, hub row, Plan card.
+  the completion ring, the living character portrait with the week strip,
+  month contribution grid, hub row, Plan card.
 - **Schedule** — iOS-style day cards with a week pager: tap-to-complete
   task rows, hour steppers, add/remove tasks, notes, multi-select
   mark-done, bottom-sheet regeneration. Future days are plannable but
@@ -26,10 +26,10 @@ Per spec §16, only Phase 1 exists so far, and it's complete:
 - **GitHub commit verification** — sync on app open + a cron backstop
   every 30 min. Found commit → Commit checks itself off. No commit → it
   stays pending; there is **no manual override** while the toggle is on.
-- **Character** — a procedural stylized 3D dev (react-three-fiber) with a
-  posed skeleton: idle (breathing, blinks, look-around), task-done
-  flourish, all-done celebration, streak-loss slump — on a draggable
-  display podium with the week floating behind as a halo of orbs.
+- **Character** — pre-rendered cinematic portraits driven by a live state
+  machine: idle (with breathing, parallax, and a hands-in-pockets fidget),
+  task-done flourish, all-done celebration, streak-loss slump, and a wink
+  on tap or on a verified commit.
 - **Settings** — LeetCode / Gym / daily-commit toggles that genuinely
   remove tracks from tasks, Schedule columns, *and* stats; timezone
   (defines the "today" verification boundary); sign out.
