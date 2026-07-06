@@ -8,9 +8,9 @@ app refuses to let you lie to yourself.
 
 Full product spec: [docs/PRODUCT_SPEC.md](docs/PRODUCT_SPEC.md)
 
-## Status — Phase 1 (the loop) is built
+## Status — Phase 1 (the loop) is built; Phase 2 has begun
 
-Per spec §16, only Phase 1 exists so far, and it's complete:
+Per spec §16, Phase 1 is complete and Phase 2 is underway (Finance first):
 
 - **Auth** — GitHub OAuth (Auth.js v5). Sign-in doubles as connecting the
   handle that commit verification reads.
@@ -33,11 +33,22 @@ Per spec §16, only Phase 1 exists so far, and it's complete:
 - **Settings** — LeetCode / Gym / daily-commit toggles that genuinely
   remove tracks from tasks, Schedule columns, *and* stats; timezone
   (defines the "today" verification boundary); sign out.
+- **Finance** (Phase 2, spec §7) — money as a growth readout, not budget
+  guilt: manual income/spending entries in integer cents, a
+  week/month/year/custom period carousel that recomputes every chart
+  instantly, the In-vs-out totals card, a per-day breakdown with an
+  Income/Spending sub-toggle, and a hand-drawn SVG Sankey (income
+  categories → gross → spending categories + Net, with an explicit
+  "Overspent" source when the books don't balance). Categories are
+  seeded defaults plus user-created types inserted straight from the
+  Add form's dropdown. No chart library — the charts are divs, springs,
+  and one SVG.
 
-**Not built yet, deliberately** (spec §16 Phase 2+): Finance, Ideas Pool,
+**Not built yet, deliberately** (spec §16 Phase 2 continues): Ideas Pool,
 Tutorials, Customize. Their routes exist as honest placeholders. The `ideas`
 table exists schema-only because v1 architecture must keep the
-`ScheduleTask.idea_id → Idea` seam (spec §12).
+`ScheduleTask.idea_id → Idea` seam (spec §12). Receipt-scan OCR is P1; the
+`FinanceEntry.source/raw_text` seam is already in the schema for it.
 
 ## Running it
 
@@ -63,8 +74,8 @@ That's genuinely all for local dev:
 ```bash
 npm run lint       # eslint
 npm run typecheck  # tsc --noEmit
-npm test           # Vitest — schedule generation, verification, streak math
-npm run test:e2e   # Playwright — the full loop against a mock GitHub API
+npm test           # Vitest — schedule generation, verification, streak + finance math
+npm run test:e2e   # Playwright — the full loop (mock GitHub API) + the finance hub
 ```
 
 The e2e suite boots its own dev server (own `.next-e2e` dist + `.pglite-e2e`
@@ -89,9 +100,15 @@ tests/e2e/              Playwright + mock GitHub events server
 
 Design decisions worth knowing:
 
-- **`lib/core` is pure.** Schedule generation and commit verification are
-  deterministic functions with no framework or DB imports — a future native
-  client hits the same logic through the API layer (spec §1.4).
+- **`lib/core` is pure.** Schedule generation, commit verification, and all
+  finance math (periods, bucketing, Sankey flows) are deterministic
+  functions with no framework or DB imports — a future native client hits
+  the same logic through the API layer (spec §1.4).
+- **Money is integer cents and never logged.** `FinanceEntry` amounts are
+  treated as real personal financial data from day one (CLAUDE.md rule):
+  no floats, no amounts in console/analytics output. When spending
+  exceeds income the Sankey shows an explicit deficit rather than a
+  negative net.
 - **Verification can be pending, but it cannot lie.** A failed GitHub API
   call is reported as *unavailable*, never as "no commit" — and there is no
   code path that returns a found commit without one in the payload.
