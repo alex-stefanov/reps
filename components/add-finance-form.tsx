@@ -172,7 +172,11 @@ export function AddFinanceForm({
       </label>
 
       {error && (
-        <p role="alert" className="mt-3 text-center text-sm font-bold text-danger">
+        <p
+          role="alert"
+          data-testid="form-error"
+          className="mt-3 text-center text-sm font-bold text-danger"
+        >
           {error}
         </p>
       )}
