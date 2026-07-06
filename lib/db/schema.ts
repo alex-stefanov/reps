@@ -219,6 +219,7 @@ export type ScheduleTask = typeof scheduleTasks.$inferSelect;
 export type StandingTask = typeof standingTasks.$inferSelect;
 export type CommitVerification = typeof commitVerifications.$inferSelect;
 export type DayCompletion = typeof dayCompletions.$inferSelect;
+export type Idea = typeof ideas.$inferSelect;
 export type Category = typeof categories.$inferSelect;
 export type FinanceEntry = typeof financeEntries.$inferSelect;
 export type Track = (typeof trackEnum.enumValues)[number];
