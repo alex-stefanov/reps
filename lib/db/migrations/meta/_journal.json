@@ -15,6 +15,13 @@
       "when": 1783367349805,
       "tag": "0001_spooky_deathbird",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1783369422876,
+      "tag": "0002_secret_killraven",
+      "breakpoints": true
     }
   ]
 }

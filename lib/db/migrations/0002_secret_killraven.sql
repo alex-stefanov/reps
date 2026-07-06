@@ -1,0 +1,1 @@
+ALTER TABLE "users" ADD COLUMN "ideas_seeded_at" timestamp with time zone;

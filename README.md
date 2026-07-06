@@ -44,11 +44,20 @@ Per spec §16, Phase 1 is complete and Phase 2 is underway (Finance first):
   Add form's dropdown. No chart library — the charts are divs, springs,
   and one SVG.
 
-**Not built yet, deliberately** (spec §16 Phase 2 continues): Ideas Pool,
-Tutorials, Customize. Their routes exist as honest placeholders. The `ideas`
-table exists schema-only because v1 architecture must keep the
-`ScheduleTask.idea_id → Idea` seam (spec §12). Receipt-scan OCR is P1; the
-`FinanceEntry.source/raw_text` seam is already in the schema for it.
+- **Ideas Pool** (Phase 2, spec §9) — a filterable pin-board of what to
+  build next: BYOX / SaaS / Project cards seeded once with nine curated,
+  genuinely buildable ideas (text-to-SQL IDE, vector DB, build-your-own-
+  Redis — never filler, per §9.3), plus add/edit/delete. The load-bearing
+  move is **Plan it**: a bottom sheet places an idea into a stretch of
+  schedule weeks as the Project Work — its name takes over those
+  sessions on Home and Schedule (the `ScheduleTask.idea_id → Idea` seam,
+  live). Renaming an idea renames its sessions; deleting one restores
+  the generic label.
+
+**Not built yet, deliberately** (spec §16 Phase 2 continues): Tutorials and
+Customize. Their routes exist as honest placeholders. Receipt-scan OCR and
+the Brainstorm agent are P1; the `FinanceEntry.source/raw_text` seam and
+`Idea.source` field are already in the schema for them.
 
 ## Running it
 
@@ -74,8 +83,8 @@ That's genuinely all for local dev:
 ```bash
 npm run lint       # eslint
 npm run typecheck  # tsc --noEmit
-npm test           # Vitest — schedule generation, verification, streak + finance math
-npm run test:e2e   # Playwright — the full loop (mock GitHub API) + the finance hub
+npm test           # Vitest — schedule generation, verification, streak/finance/ideas logic
+npm run test:e2e   # Playwright — the full loop (mock GitHub API), Finance, Ideas Pool
 ```
 
 The e2e suite boots its own dev server (own `.next-e2e` dist + `.pglite-e2e`

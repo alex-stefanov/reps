@@ -46,6 +46,8 @@ export const users = pgTable("users", {
   leetcodeOn: boolean("leetcode_on").notNull().default(true),
   gymOn: boolean("gym_on").notNull().default(true),
   dailyCommitOn: boolean("daily_commit_on").notNull().default(true),
+  /** First-open curated seeding of the Ideas Pool happens exactly once (spec §9.6). */
+  ideasSeededAt: timestamp("ideas_seeded_at", { withTimezone: true }),
   createdAt: timestamp("created_at", { withTimezone: true })
     .notNull()
     .defaultNow(),
@@ -217,6 +219,7 @@ export type ScheduleTask = typeof scheduleTasks.$inferSelect;
 export type StandingTask = typeof standingTasks.$inferSelect;
 export type CommitVerification = typeof commitVerifications.$inferSelect;
 export type DayCompletion = typeof dayCompletions.$inferSelect;
+export type Idea = typeof ideas.$inferSelect;
 export type Category = typeof categories.$inferSelect;
 export type FinanceEntry = typeof financeEntries.$inferSelect;
 export type Track = (typeof trackEnum.enumValues)[number];
