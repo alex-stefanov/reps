@@ -8,6 +8,13 @@
       "when": 1782937491428,
       "tag": "0000_odd_killmonger",
       "breakpoints": true
+    },
+    {
+      "idx": 1,
+      "version": "7",
+      "when": 1783367349805,
+      "tag": "0001_spooky_deathbird",
+      "breakpoints": true
     }
   ]
 }
