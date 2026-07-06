@@ -46,6 +46,8 @@ export const users = pgTable("users", {
   leetcodeOn: boolean("leetcode_on").notNull().default(true),
   gymOn: boolean("gym_on").notNull().default(true),
   dailyCommitOn: boolean("daily_commit_on").notNull().default(true),
+  /** First-open curated seeding of the Ideas Pool happens exactly once (spec §9.6). */
+  ideasSeededAt: timestamp("ideas_seeded_at", { withTimezone: true }),
   createdAt: timestamp("created_at", { withTimezone: true })
     .notNull()
     .defaultNow(),
