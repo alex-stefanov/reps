@@ -45,6 +45,12 @@
   --color-warn: #ff9f0a;
   --color-danger: #ff3b30;
 
+  /* Finance — growth, not guilt: income is the hero green, spending is
+     iOS indigo (deliberately not red). */
+  --color-income: #30d158;
+  --color-spend: #5e5ce6;
+  --color-spend-soft: #ecebfd;
+
   /* Type */
   --font-sans: var(--font-manrope), -apple-system, "SF Pro Text", system-ui,
     sans-serif;
