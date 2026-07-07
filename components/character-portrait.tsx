@@ -3,6 +3,7 @@
 import { motion, useMotionValue, useSpring, useTransform } from "framer-motion";
 import Image from "next/image";
 import { useEffect, useRef, useState } from "react";
+import { ambianceById, DEFAULT_AMBIANCE_ID } from "@/lib/core/cosmetics";
 
 /**
  * The character as pre-rendered cinematic portraits with a live 2.5D layer —
@@ -38,10 +39,14 @@ const ALT: Record<PortraitState, string> = {
 export function CharacterPortrait({
   state,
   commitVerified,
+  ambianceId = DEFAULT_AMBIANCE_ID,
 }: {
   state: AvatarState;
   commitVerified: boolean;
+  /** Gallery lighting (Customize, spec §10) — a wash over the backdrop. */
+  ambianceId?: string;
 }) {
+  const ambiance = ambianceById(ambianceId);
   const [overlay, setOverlay] = useState<"wink" | "blink" | null>(null);
   const winkTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
 
@@ -136,6 +141,21 @@ export function CharacterPortrait({
             />
           </motion.div>
         ))}
+        {/* gallery lighting wash (Customize) */}
+        {ambiance.washOpacity > 0 && (
+          <motion.div
+            key={ambiance.id}
+            aria-hidden
+            className="absolute inset-0"
+            initial={false}
+            animate={{ opacity: ambiance.washOpacity }}
+            transition={{ duration: 0.5, ease: "easeOut" }}
+            style={{
+              background: ambiance.wash,
+              mixBlendMode: ambiance.blend,
+            }}
+          />
+        )}
       </motion.div>
 
       {/* the figure, breathing */}

@@ -11,6 +11,7 @@ import {
 import { MonthGrid } from "@/components/month-grid";
 import { HubRow } from "@/components/hub-row";
 import { TaskList } from "@/components/task-list";
+import { parseCosmetics } from "@/lib/core/cosmetics";
 import { requireUser } from "@/lib/server/current-user";
 import { getHomeView } from "@/lib/server/home-view";
 
@@ -28,6 +29,8 @@ export default async function HomePage() {
   const user = await requireUser();
   const view = await getHomeView(user);
   if (!view) redirect("/onboarding");
+
+  const cosmetics = parseCosmetics(user.cosmetics);
 
   const gymTask = view.tasks.find(
     (t) => t.kind === "standing" && t.track === "gym",
@@ -72,6 +75,7 @@ export default async function HomePage() {
           streak={view.streak.current}
           justLost={view.streak.justLost}
           commitVerified={view.verification.state === "verified"}
+          ambianceId={cosmetics.ambiance}
         />
       </div>
 
