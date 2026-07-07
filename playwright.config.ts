@@ -24,6 +24,12 @@ export default defineConfig({
       timeout: 30_000,
     },
     {
+      command: "npx tsx tests/e2e/mock-anthropic.ts",
+      port: 4788,
+      reuseExistingServer: false,
+      timeout: 30_000,
+    },
+    {
       command: "npm run dev -- --port 3100",
       port: 3100,
       reuseExistingServer: false,
@@ -35,6 +41,9 @@ export default defineConfig({
         AUTH_SECRET: "e2e-secret",
         CRON_SECRET: "e2e-cron-secret",
         GITHUB_API_URL: "http://127.0.0.1:4799",
+        // AI assists point at the mock Claude API; a non-empty key satisfies the SDK.
+        ANTHROPIC_API_KEY: "e2e-anthropic",
+        ANTHROPIC_BASE_URL: "http://127.0.0.1:4788",
       },
     },
   ],
