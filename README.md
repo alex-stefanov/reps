@@ -54,10 +54,18 @@ Per spec §16, Phase 1 is complete and Phase 2 is underway (Finance first):
   live). Renaming an idea renames its sessions; deleting one restores
   the generic label.
 
-**Not built yet, deliberately** (spec §16 Phase 2 continues): Tutorials and
-Customize. Their routes exist as honest placeholders. Receipt-scan OCR and
-the Brainstorm agent are P1; the `FinanceEntry.source/raw_text` seam and
-`Idea.source` field are already in the schema for them.
+- **Tutorials** (Phase 2, spec §11) — the curated learning shelf: ten
+  seeded classics (Build-Your-Own-X, Project-Based-Learning, CS50, the
+  from-scratch books, plus the sketch's ASP/C#/AI cards), language and
+  topic chip filters that combine, links opening in a new tab with host
+  provenance, and full curation (add with vocabulary-suggesting
+  datalists, edit, delete — seeds included). Seeded once per user, same
+  contract as Ideas.
+
+**Not built yet, deliberately** (spec §16 Phase 2 continues): Customize.
+Its route is an honest placeholder. Receipt-scan OCR and the Brainstorm
+agent are P1; the `FinanceEntry.source/raw_text` seam and `Idea.source`
+field are already in the schema for them.
 
 ## Running it
 
@@ -83,8 +91,8 @@ That's genuinely all for local dev:
 ```bash
 npm run lint       # eslint
 npm run typecheck  # tsc --noEmit
-npm test           # Vitest — schedule generation, verification, streak/finance/ideas logic
-npm run test:e2e   # Playwright — the full loop (mock GitHub API), Finance, Ideas Pool
+npm test           # Vitest — schedule, verification, streak/finance/ideas/tutorials logic
+npm run test:e2e   # Playwright — the loop (mock GitHub API), Finance, Ideas, Tutorials
 ```
 
 The e2e suite boots its own dev server (own `.next-e2e` dist + `.pglite-e2e`
