@@ -1,24 +1,43 @@
 "use client";
 
 import { motion } from "framer-motion";
-import { useMemo, useState, useTransition } from "react";
+import { useMemo, useRef, useState, useTransition } from "react";
+import { formatEuros } from "@/lib/core/finance";
 import { addFinanceEntry } from "@/lib/server/finance-actions";
+import { scanReceipt } from "@/lib/server/receipt-actions";
 import type { FinanceDirection } from "@/lib/core/finance";
 import type { CategoryDTO } from "./finance-screen";
+import { CameraIcon } from "./icons";
 
 const NEW_TYPE = "__new__";
+
+/** Strips the "data:image/…;base64," prefix a FileReader data URL carries. */
+function readAsBase64(file: File): Promise<string> {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onload = () => {
+      const result = String(reader.result);
+      resolve(result.slice(result.indexOf(",") + 1));
+    };
+    reader.onerror = () => reject(reader.error);
+    reader.readAsDataURL(file);
+  });
+}
 
 /**
  * Add Finance (spec §7.2): Income ‹› Spending carousel, big amount field,
  * type dropdown that can insert a new one. Built to beat the spec's
  * 20-second time-to-log bar — amount is auto-focused, today is preset.
+ * Spending has an optional receipt scan (§7.4) that prefills the form.
  */
 export function AddFinanceForm({
   categories,
   today,
+  aiEnabled,
 }: {
   categories: CategoryDTO[];
   today: string;
+  aiEnabled: boolean;
 }) {
   const [direction, setDirection] = useState<FinanceDirection>("spending");
   const [amount, setAmount] = useState("");
@@ -27,6 +46,11 @@ export function AddFinanceForm({
   const [occurredOn, setOccurredOn] = useState(today);
   const [error, setError] = useState<string | null>(null);
   const [pending, startTransition] = useTransition();
+
+  const [scanning, setScanning] = useState(false);
+  const [scanNote, setScanNote] = useState<string | null>(null);
+  const scannedRef = useRef<string | null>(null); // merchant, for provenance
+  const fileRef = useRef<HTMLInputElement>(null);
 
   const options = useMemo(
     () => categories.filter((c) => c.kind === direction),
@@ -44,10 +68,44 @@ export function AddFinanceForm({
         categoryId: isNew ? null : selected,
         newCategoryName: isNew ? newName : null,
         occurredOn,
+        source: scannedRef.current !== null ? "receipt" : "manual",
+        rawText: scannedRef.current,
       });
       // On success the action redirects; only errors return.
       if (result?.error) setError(result.error);
     });
+  };
+
+  const onReceipt = async (file: File) => {
+    setError(null);
+    setScanNote(null);
+    setScanning(true);
+    try {
+      const imageBase64 = await readAsBase64(file);
+      const result = await scanReceipt({ imageBase64, mediaType: file.type });
+      if (result.error) {
+        setScanNote(result.error);
+        return;
+      }
+      setDirection("spending");
+      if (result.amountCents != null) setAmount(formatEuros(result.amountCents).replace("€", ""));
+      if (result.categoryId) {
+        setCategoryId(result.categoryId);
+        setNewName("");
+      } else if (result.categoryName) {
+        setCategoryId(NEW_TYPE);
+        setNewName(result.categoryName);
+      }
+      scannedRef.current = result.merchant ?? "";
+      setScanNote(
+        `Read ${result.categoryName ?? "an entry"} — check it and add.`,
+      );
+    } catch {
+      setScanNote("Couldn't read that image — enter it manually.");
+    } finally {
+      setScanning(false);
+      if (fileRef.current) fileRef.current.value = "";
+    }
   };
 
   const isIncome = direction === "income";
@@ -100,6 +158,49 @@ export function AddFinanceForm({
           </button>
         ))}
       </div>
+
+      {/* Scan receipt (spec §7.4) — spending only */}
+      {!isIncome && (
+        <div className="mt-4">
+          <input
+            ref={fileRef}
+            type="file"
+            accept="image/jpeg,image/png,image/webp"
+            capture="environment"
+            data-testid="receipt-input"
+            className="hidden"
+            onChange={(e) => {
+              const file = e.target.files?.[0];
+              if (file) void onReceipt(file);
+            }}
+          />
+          <motion.button
+            type="button"
+            whileTap={{ scale: 0.98 }}
+            disabled={!aiEnabled || scanning}
+            data-testid="scan-receipt"
+            onClick={() => fileRef.current?.click()}
+            title={aiEnabled ? undefined : "Set ANTHROPIC_API_KEY to enable receipt scanning"}
+            className="flex w-full items-center justify-center gap-2 rounded-2xl border-2 border-dashed border-hair-strong py-3 text-sm font-bold text-sub transition-colors hover:border-spend hover:text-spend disabled:opacity-50 disabled:hover:border-hair-strong disabled:hover:text-sub"
+          >
+            <CameraIcon className="size-4.5" />
+            {scanning
+              ? "Reading receipt…"
+              : aiEnabled
+                ? "Scan a receipt"
+                : "Scan a receipt (needs API key)"}
+          </motion.button>
+          {scanNote && (
+            <p
+              role="status"
+              data-testid="scan-note"
+              className="mt-2 text-center text-xs font-semibold text-sub"
+            >
+              {scanNote}
+            </p>
+          )}
+        </div>
+      )}
 
       {/* Amount — the star of the form */}
       <label className="mt-6 block text-center">

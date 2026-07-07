@@ -4,14 +4,17 @@ import { motion } from "framer-motion";
 import { useState, useTransition } from "react";
 import { IDEA_TYPE_LABELS, IDEA_TYPES, type IdeaType } from "@/lib/core/ideas";
 import { addIdea } from "@/lib/server/idea-actions";
+import { BrainstormSheet } from "./brainstorm-sheet";
+import { SparkIcon } from "./icons";
 
-/** Add Idea (spec §9.2): Name, Type, Description, Hours → Add. */
-export function AddIdeaForm() {
+/** Add Idea (spec §9.2): Name, Type, Description, Hours → Add + Brainstorm. */
+export function AddIdeaForm({ aiEnabled }: { aiEnabled: boolean }) {
   const [name, setName] = useState("");
   const [type, setType] = useState<IdeaType>("project");
   const [description, setDescription] = useState("");
   const [hours, setHours] = useState("");
   const [error, setError] = useState<string | null>(null);
+  const [brainstormOpen, setBrainstormOpen] = useState(false);
   const [pending, startTransition] = useTransition();
 
   const submit = () => {
@@ -23,7 +26,32 @@ export function AddIdeaForm() {
   };
 
   return (
-    <form action={submit} className="card-shadow mt-6 rounded-[2rem] bg-card p-5">
+    <>
+      {/* Brainstorm with the agent (spec §9.2) */}
+      <button
+        type="button"
+        disabled={!aiEnabled}
+        data-testid="brainstorm-open"
+        onClick={() => setBrainstormOpen(true)}
+        title={aiEnabled ? undefined : "Set ANTHROPIC_API_KEY to enable the brainstorm agent"}
+        className="card-shadow mt-6 flex w-full items-center gap-3 rounded-2xl bg-card px-4 py-3.5 text-left transition-transform active:scale-[0.99] disabled:opacity-50"
+      >
+        <span className="flex size-9 shrink-0 items-center justify-center rounded-xl bg-accent-soft text-accent-deep">
+          <SparkIcon className="size-4.5" />
+        </span>
+        <span className="min-w-0 flex-1">
+          <span className="block text-[14px] font-extrabold tracking-tight text-text">
+            Brainstorm with the agent
+          </span>
+          <span className="block text-xs text-sub">
+            {aiEnabled
+              ? "Stuck? Let it suggest buildable projects."
+              : "Needs an ANTHROPIC_API_KEY."}
+          </span>
+        </span>
+      </button>
+
+    <form action={submit} className="card-shadow mt-4 rounded-[2rem] bg-card p-5">
       <label className="block">
         <span className="text-xs font-bold uppercase tracking-wide text-sub">
           Name
@@ -112,5 +140,18 @@ export function AddIdeaForm() {
         {pending ? "Adding…" : "Add idea"}
       </motion.button>
     </form>
+
+      <BrainstormSheet
+        open={brainstormOpen}
+        onClose={() => setBrainstormOpen(false)}
+        onAccept={(idea) => {
+          setName(idea.name);
+          setType(idea.type);
+          setDescription(idea.description);
+          setHours(idea.hours);
+          setError(null);
+        }}
+      />
+    </>
   );
 }

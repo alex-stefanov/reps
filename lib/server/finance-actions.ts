@@ -22,6 +22,10 @@ export interface AddFinanceEntryInput {
   newCategoryName: string | null;
   /** ISO date; defaults to today in the user's timezone. */
   occurredOn: string | null;
+  /** "receipt" when this entry came from a scan (spec §7.4 seam). */
+  source?: "manual" | "receipt";
+  /** Merchant/raw text captured by a scan, for provenance. */
+  rawText?: string | null;
 }
 
 export interface AddFinanceEntryResult {
@@ -61,6 +65,8 @@ export async function addFinanceEntry(
     amountCents,
     categoryId: category.id,
     occurredOn,
+    source: input.source === "receipt" ? "receipt" : "manual",
+    rawText: input.rawText?.trim() ? input.rawText.trim().slice(0, 200) : null,
   });
 
   revalidatePath("/finance");
