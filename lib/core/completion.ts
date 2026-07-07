@@ -38,6 +38,16 @@ export interface StreakState {
   justLost: boolean;
 }
 
+/**
+ * Streak lengths that earn a celebration (spec §6.3, §6.5 P1). Kept sparse so
+ * the milestone burst stays a real moment, not a daily confetti habit.
+ */
+export const STREAK_MILESTONES = [3, 7, 14, 30, 50, 100, 200, 365];
+
+export function isStreakMilestone(streak: number): boolean {
+  return STREAK_MILESTONES.includes(streak);
+}
+
 export function computeStreak(stats: DayStat[], todayISO: string): StreakState {
   const byDate = new Map(stats.map((s) => [s.date, s]));
 
