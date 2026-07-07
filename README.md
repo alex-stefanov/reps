@@ -8,9 +8,10 @@ app refuses to let you lie to yourself.
 
 Full product spec: [docs/PRODUCT_SPEC.md](docs/PRODUCT_SPEC.md)
 
-## Status — Phase 1 (the loop) is built; Phase 2 has begun
+## Status — Phase 1 (the loop) + Phase 2 (the hubs) are built
 
-Per spec §16, Phase 1 is complete and Phase 2 is underway (Finance first):
+Per spec §16, Phase 1 is complete and all four Phase 2 hubs (Finance,
+Ideas Pool, Tutorials, Customize) are built:
 
 - **Auth** — GitHub OAuth (Auth.js v5). Sign-in doubles as connecting the
   handle that commit verification reads.
@@ -62,10 +63,20 @@ Per spec §16, Phase 1 is complete and Phase 2 is underway (Finance first):
   datalists, edit, delete — seeds included). Seeded once per user, same
   contract as Ideas.
 
-**Not built yet, deliberately** (spec §16 Phase 2 continues): Customize.
-Its route is an honest placeholder. Receipt-scan OCR and the Brainstorm
-agent are P1; the `FinanceEntry.source/raw_text` seam and `Idea.source`
-field are already in the schema for them.
+- **Customize** (Phase 2, spec §10) — the character's gallery lighting:
+  five ambiances (Studio/Dawn/Neon/Forest/Noir) that wash over the
+  portrait's blurred backdrop and re-color its display case, previewed
+  live on the real Home hero and persisted to `users.cosmetics`. The
+  spec's parameterized avatar was reframed for the pre-rendered
+  character (Path A): appearance variants are portrait-pack art, so
+  code-side cosmetics theme presentation; the jsonb config is built to
+  hold outfit packs later.
+
+**Phase 2 assists still deliberately unbuilt** (spec §16 Phase 3, all P1):
+receipt-scan OCR, the Ideas brainstorm agent, AI schedule autofill,
+Schedule month view, character animation/unlock economy. The
+`FinanceEntry.source/raw_text` seam, `Idea.source` field, and jsonb
+`users.cosmetics` are already in the schema for them.
 
 ## Running it
 
@@ -91,8 +102,8 @@ That's genuinely all for local dev:
 ```bash
 npm run lint       # eslint
 npm run typecheck  # tsc --noEmit
-npm test           # Vitest — schedule, verification, streak/finance/ideas/tutorials logic
-npm run test:e2e   # Playwright — the loop (mock GitHub API), Finance, Ideas, Tutorials
+npm test           # Vitest — schedule, verification, streak, finance/ideas/tutorials/cosmetics
+npm run test:e2e   # Playwright — the loop (mock GitHub API) + all four Phase 2 hubs
 ```
 
 The e2e suite boots its own dev server (own `.next-e2e` dist + `.pglite-e2e`
@@ -175,7 +186,11 @@ the hero is now ~190KB of images and a few springs.
 
 The daily "1/3" is an Apple-Fitness-style ring; the week strip under the
 portrait carries the same completion levels; the Schedule is iOS day
-cards with a bottom-sheet regenerate flow instead of a data table.
+cards with a bottom-sheet regenerate flow instead of a data table. The
+Phase 2 hubs speak the same language: no chart library (Finance's bars,
+breakdown, and Sankey are divs, springs, and one hand-drawn SVG), and
+Customize re-lights this very portrait with a gallery-lighting wash
+rather than a 3D scene.
 
 ## Deploying
 

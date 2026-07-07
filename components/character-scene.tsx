@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
+import { ambianceById, DEFAULT_AMBIANCE_ID } from "@/lib/core/cosmetics";
 import type { SceneDay } from "@/lib/server/home-view";
 import {
   CharacterPortrait,
@@ -34,6 +35,7 @@ export function CharacterScene({
   streak,
   justLost,
   commitVerified,
+  ambianceId = DEFAULT_AMBIANCE_ID,
 }: {
   week: SceneDay[];
   doneCount: number;
@@ -41,7 +43,9 @@ export function CharacterScene({
   streak: number;
   justLost: boolean;
   commitVerified: boolean;
+  ambianceId?: string;
 }) {
+  const ambiance = ambianceById(ambianceId);
   const baseState: AvatarState =
     totalCount > 0 && doneCount >= totalCount
       ? "celebrate"
@@ -70,7 +74,8 @@ export function CharacterScene({
   return (
     <section
       aria-label="Character and current week"
-      className="card-shadow-lg relative overflow-hidden rounded-[2rem] bg-[#e9eaec]"
+      className="card-shadow-lg relative overflow-hidden rounded-[2rem] transition-colors duration-500"
+      style={{ background: ambiance.cardBg }}
     >
       {/* Streak pill */}
       <div className="absolute right-4 top-4 z-10">
@@ -90,7 +95,11 @@ export function CharacterScene({
       </div>
 
       <div className="h-[26rem]" data-avatar-state={state}>
-        <CharacterPortrait state={state} commitVerified={commitVerified} />
+        <CharacterPortrait
+          state={state}
+          commitVerified={commitVerified}
+          ambianceId={ambianceId}
+        />
       </div>
 
       {/* the week strip */}

@@ -3,6 +3,7 @@ import {
   date,
   index,
   integer,
+  jsonb,
   pgEnum,
   pgTable,
   primaryKey,
@@ -50,6 +51,12 @@ export const users = pgTable("users", {
   ideasSeededAt: timestamp("ideas_seeded_at", { withTimezone: true }),
   /** Same one-time contract for the Tutorials library (spec §11.2). */
   tutorialsSeededAt: timestamp("tutorials_seeded_at", { withTimezone: true }),
+  /**
+   * Cosmetic config (spec §10/§12) — JSON so future surfaces (portrait
+   * outfit packs, accessories) extend it without migrations. Today:
+   * { ambiance: <gallery-lighting id> }.
+   */
+  cosmetics: jsonb("cosmetics").notNull().default({}),
   createdAt: timestamp("created_at", { withTimezone: true })
     .notNull()
     .defaultNow(),
