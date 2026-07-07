@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { AddIdeaForm } from "@/components/add-idea-form";
 import { ChevronLeftIcon } from "@/components/icons";
+import { isClaudeConfigured } from "@/lib/server/claude";
 import { requireUser } from "@/lib/server/current-user";
 
 export default async function AddIdeaPage() {
@@ -21,7 +22,7 @@ export default async function AddIdeaPage() {
         </h1>
       </div>
 
-      <AddIdeaForm />
+      <AddIdeaForm aiEnabled={isClaudeConfigured()} />
     </main>
   );
 }

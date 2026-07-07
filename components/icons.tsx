@@ -184,3 +184,21 @@ export function PersonIcon(props: IconProps) {
     </svg>
   );
 }
+
+export function CameraIcon(props: IconProps) {
+  return (
+    <svg {...base(props)}>
+      <path d="M3 8h3l2-2.5h8L18 8h3v12H3V8z" />
+      <circle cx="12" cy="13.5" r="3.5" />
+    </svg>
+  );
+}
+
+export function SparkIcon(props: IconProps) {
+  return (
+    <svg {...base(props)}>
+      <path d="M12 3l1.8 4.9L18.5 9l-4.7 1.7L12 15.5l-1.8-4.8L5.5 9l4.7-1.1L12 3z" />
+      <path d="M18 15l.8 2.2L21 18l-2.2.9L18 21l-.9-2.1L15 18l2.1-.8L18 15z" />
+    </svg>
+  );
+}
