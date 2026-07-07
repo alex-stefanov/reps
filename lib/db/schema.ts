@@ -48,6 +48,8 @@ export const users = pgTable("users", {
   dailyCommitOn: boolean("daily_commit_on").notNull().default(true),
   /** First-open curated seeding of the Ideas Pool happens exactly once (spec §9.6). */
   ideasSeededAt: timestamp("ideas_seeded_at", { withTimezone: true }),
+  /** Same one-time contract for the Tutorials library (spec §11.2). */
+  tutorialsSeededAt: timestamp("tutorials_seeded_at", { withTimezone: true }),
   createdAt: timestamp("created_at", { withTimezone: true })
     .notNull()
     .defaultNow(),
@@ -219,7 +221,27 @@ export type ScheduleTask = typeof scheduleTasks.$inferSelect;
 export type StandingTask = typeof standingTasks.$inferSelect;
 export type CommitVerification = typeof commitVerifications.$inferSelect;
 export type DayCompletion = typeof dayCompletions.$inferSelect;
+/** Curated learning-link library (spec §11, §12) — seeded once, then fully user-curated. */
+export const tutorials = pgTable(
+  "tutorials",
+  {
+    id: uuid("id").primaryKey().defaultRandom(),
+    userId: uuid("user_id")
+      .notNull()
+      .references(() => users.id, { onDelete: "cascade" }),
+    title: text("title").notNull(),
+    url: text("url").notNull(),
+    language: text("language").notNull(),
+    topic: text("topic").notNull(),
+    createdAt: timestamp("created_at", { withTimezone: true })
+      .notNull()
+      .defaultNow(),
+  },
+  (t) => [index("tutorials_user").on(t.userId)],
+);
+
 export type Idea = typeof ideas.$inferSelect;
+export type Tutorial = typeof tutorials.$inferSelect;
 export type Category = typeof categories.$inferSelect;
 export type FinanceEntry = typeof financeEntries.$inferSelect;
 export type Track = (typeof trackEnum.enumValues)[number];
