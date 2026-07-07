@@ -8,13 +8,12 @@ app refuses to let you lie to yourself.
 
 Full product spec: [docs/PRODUCT_SPEC.md](docs/PRODUCT_SPEC.md)
 
-## Status — Phase 1 + Phase 2 built; Phase 3 assists underway
+## Status — Phases 1–3 built
 
-Per spec §16, Phase 1 (the loop) and all four Phase 2 hubs (Finance,
-Ideas Pool, Tutorials, Customize) are built, and the code-only Phase 3
-assists have landed (month view, schedule auto-plan, milestone
-animation). The two AI/OCR assists are scoped below, pending a provider
-decision:
+Per spec §16, the daily loop (Phase 1), all four hubs (Phase 2: Finance,
+Ideas Pool, Tutorials, Customize), and the Phase 3 assists — Schedule
+month view, schedule auto-plan, streak-milestone animation, receipt scan,
+and the Ideas brainstorm agent — are all built:
 
 - **Auth** — GitHub OAuth (Auth.js v5). Sign-in doubles as connecting the
   handle that commit verification reads.
@@ -92,15 +91,30 @@ decision:
   character: an expanding glow, radiating sparks, and a frosted
   "N day streak" card. Streak-loss keeps its slump portrait.
 
-**Still unbuilt — the two AI/OCR assists** (spec §16 Phase 3, P1; both are
-the spec's *blocking* open questions §15.4/§15.5): **receipt-scan OCR**
-(photo → amount + semantic category) and the **Ideas brainstorm agent**
-(chat that suggests valid, buildable ideas). Both need an external
-LLM/OCR provider, an API key, and per-call cost — a deliberate decision,
-not yet made. The `FinanceEntry.source/raw_text` seam, `Idea.source`
-field, and jsonb `users.cosmetics` already hold the schema seams. The
-character accessory/unlock *economy* stays parked (needs monetization,
-spec §10/§18).
+- **Receipt scan** (Phase 3, spec §7.4) — on the Add Finance spending
+  side, a photo → editable {amount, semantic category} suggestion via
+  Claude vision. The hard part (spec §7.3: ice cream files under *Food*,
+  not "ice cream") is handled by handing the model the user's real
+  categories and asking it to map semantically; the amount is never
+  logged. Entries record `source='receipt'`.
+
+- **Brainstorm agent** (Phase 3, spec §9.2/§9.3) — the Add Idea screen
+  opens a chat that asks orienting questions and proposes *buildable*
+  projects as cards that prefill the form. Guard-railed against filler
+  (spec §15.5) by a system prompt seeded with the curated pool as the
+  quality bar, plus structured output re-validated server-side.
+
+Both AI assists run on the official `@anthropic-ai/sdk` through one seam
+(`lib/server/claude.ts`): the model is a single constant (Opus 4.8), and
+everything is gated on `ANTHROPIC_API_KEY` — **with no key the two
+features render disabled with an explanatory label and the rest of the
+app is unaffected**, exactly like the DB and auth fallbacks. Model output
+is constrained by a JSON schema and then re-validated by the pure
+`lib/core/ai` normalizers before it's trusted.
+
+**Deliberately parked** (spec §17/§18): the character accessory/unlock
+*economy* (needs monetization) and everything in the spec's Non-Goals.
+That completes the spec's Phase 1–3 scope.
 
 ## Running it
 
@@ -120,14 +134,18 @@ That's genuinely all for local dev:
   out of production builds. For real OAuth, register a GitHub OAuth app and
   set `AUTH_GITHUB_ID` / `AUTH_GITHUB_SECRET` / `AUTH_SECRET`
   (see [.env.example](.env.example)).
+- **No AI key needed** — without `ANTHROPIC_API_KEY`, the Phase 3 AI
+  assists (receipt scan, brainstorm) render disabled with an explanatory
+  label and everything else works. Set the key to turn them on (calls
+  cost money when used).
 
 ### Checks
 
 ```bash
 npm run lint       # eslint
 npm run typecheck  # tsc --noEmit
-npm test           # Vitest — schedule, verification, streak/finance/ideas/tutorials/cosmetics/autofill
-npm run test:e2e   # Playwright — the loop (mock GitHub API), the four hubs, month view + auto-plan
+npm test           # Vitest — schedule/verification/streak/finance/ideas/tutorials/cosmetics/autofill/ai
+npm run test:e2e   # Playwright — the loop, four hubs, month view, auto-plan, AI (mock GitHub + Claude)
 ```
 
 The e2e suite boots its own dev server (own `.next-e2e` dist + `.pglite-e2e`
@@ -140,14 +158,15 @@ auto-check + grid lights up*.
 ```
 app/                    Next.js App Router routes (thin — screens only)
 components/             UI components (character, grids, blobs, forms)
-lib/core/               framework-agnostic logic: schedule generation,
-                        commit verification, streak/contribution math, dates
+lib/core/               framework-agnostic logic: schedule generation, commit
+                        verification, streak/finance/autofill math, AI-output
+                        validation, dates
 lib/server/             server layer: session→user, day-state assembly,
-                        rollups, sync service, server actions
+                        rollups, sync service, the Claude seam, server actions
 lib/db/                 Drizzle schema, driver switch (Neon ⇄ PGlite),
                         generated SQL migrations
 tests/unit/             Vitest against lib/core
-tests/e2e/              Playwright + mock GitHub events server
+tests/e2e/              Playwright + mock GitHub events / mock Claude servers
 ```
 
 Design decisions worth knowing:
@@ -173,6 +192,12 @@ Design decisions worth knowing:
   recomputed on change, so a disabled track vanishes from history stats too.
 - **`DayCompletion`** is the denormalized rollup driving the grid and
   streaks, recomputed on every mutation of a day's tasks.
+- **AI is optional and never trusted blind.** One seam (`lib/server/
+  claude.ts`) owns the SDK, the model constant, and the `ANTHROPIC_API_KEY`
+  gate; the model is constrained to a JSON schema, and its output is then
+  re-validated by pure `lib/core/ai` normalizers with the same rules as
+  manual entry. `ANTHROPIC_BASE_URL` is overridable **only** so tests can
+  run a mock server (same pattern as `GITHUB_API_URL`).
 
 ## Defaults chosen for spec §15 open questions
 
