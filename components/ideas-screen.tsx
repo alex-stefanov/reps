@@ -1,12 +1,15 @@
 "use client";
 
-import { motion } from "framer-motion";
-import { useMemo, useState } from "react";
+import { AnimatePresence, motion } from "framer-motion";
+import Link from "next/link";
+import { useMemo, useState, useTransition } from "react";
 import {
   IDEA_TYPE_LABELS,
   IDEA_TYPES,
   type IdeaType,
 } from "@/lib/core/ideas";
+import { autofillProjectWeeks } from "@/lib/server/idea-actions";
+import { CalendarIcon } from "./icons";
 import { IdeaSheet } from "./idea-sheet";
 
 export interface IdeaDTO {
@@ -57,6 +60,8 @@ export function IdeasScreen({
 
   return (
     <div className="mt-6">
+      {plan && ideas.length > 0 && <AutoPlanBar />}
+
       {/* Filter by type (spec §9.1) */}
       <div
         role="tablist"
@@ -131,6 +136,84 @@ export function IdeasScreen({
       )}
 
       <IdeaSheet idea={open} plan={plan} onClose={() => setOpenId(null)} />
+    </div>
+  );
+}
+
+/**
+ * Auto-plan the Project Work weeks from the pool (spec §9.4). Deterministic
+ * packer under the hood — labelled "Auto-plan," not "AI," because that's
+ * what it is; an LLM-ranked variant would build on the same server action.
+ */
+function AutoPlanBar() {
+  const [pending, startTransition] = useTransition();
+  const [result, setResult] = useState<{
+    error?: string;
+    placed?: number;
+    weeksFilled?: number;
+    leftover?: number;
+  } | null>(null);
+
+  const run = () => {
+    setResult(null);
+    startTransition(async () => {
+      setResult(await autofillProjectWeeks());
+    });
+  };
+
+  return (
+    <div className="card-shadow mb-4 rounded-2xl bg-card p-4">
+      <div className="flex items-center gap-3">
+        <span className="flex size-9 shrink-0 items-center justify-center rounded-xl bg-accent-soft text-accent-deep">
+          <CalendarIcon className="size-4.5" />
+        </span>
+        <div className="min-w-0 flex-1">
+          <p className="text-[14px] font-extrabold tracking-tight text-text">
+            Auto-plan project weeks
+          </p>
+          <p className="text-xs leading-snug text-sub">
+            Fill the plan&apos;s Project Work from this pool, sized to your
+            hours.
+          </p>
+        </div>
+        <motion.button
+          type="button"
+          whileTap={{ scale: 0.95 }}
+          disabled={pending}
+          data-testid="autoplan"
+          onClick={run}
+          className="shrink-0 rounded-xl bg-text px-3.5 py-2 text-xs font-bold text-card active:scale-95 disabled:opacity-60"
+        >
+          {pending ? "Planning…" : "Auto-plan"}
+        </motion.button>
+      </div>
+
+      <AnimatePresence>
+        {result && (
+          <motion.p
+            initial={{ opacity: 0, height: 0 }}
+            animate={{ opacity: 1, height: "auto" }}
+            data-testid="autoplan-result"
+            className={`mt-2.5 text-xs font-bold ${
+              result.error ? "text-danger" : "text-accent-deep"
+            }`}
+          >
+            {result.error ? (
+              result.error
+            ) : (
+              <>
+                Placed {result.placed} idea{result.placed === 1 ? "" : "s"}{" "}
+                across {result.weeksFilled} week
+                {result.weeksFilled === 1 ? "" : "s"}
+                {result.leftover ? ` · ${result.leftover} didn't fit` : ""}.{" "}
+                <Link href="/schedule?v=month" className="underline">
+                  See the plan
+                </Link>
+              </>
+            )}
+          </motion.p>
+        )}
+      </AnimatePresence>
     </div>
   );
 }

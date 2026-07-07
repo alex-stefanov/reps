@@ -23,6 +23,7 @@ import {
   RegenerateIcon,
   XIcon,
 } from "./icons";
+import { ScheduleViewToggle } from "./schedule-view-toggle";
 
 /**
  * The Schedule as iOS day cards — swipe-friendly, tap-to-complete, with an
@@ -374,16 +375,14 @@ export function ScheduleScreen({
             </p>
           </div>
         </div>
-        <div className="flex gap-2">
-          {pill(mode === "select", () => (mode === "select" ? exitSelect() : setMode("select")), "Select", <PlusIcon className="size-3.5" />)}
-          {pill(mode === "edit", () => setMode(mode === "edit" ? "view" : "edit"), "Edit", <PencilIcon className="size-3.5" />)}
-        </div>
+        <ScheduleViewToggle active="week" weekIndex={week.weekIndex} />
       </header>
 
-      {/* Week pager */}
+      {/* Pager + task-edit controls */}
+      <div className="mt-5 flex items-center justify-between gap-2">
       <nav
         aria-label="Week"
-        className="card-shadow mx-auto mt-5 flex w-fit items-center gap-1 rounded-full bg-card p-1"
+        className="card-shadow flex w-fit items-center gap-1 rounded-full bg-card p-1"
       >
         <Link
           href={`/schedule?w=${week.weekIndex - 1}`}
@@ -416,6 +415,12 @@ export function ScheduleScreen({
           </Link>
         )}
       </nav>
+
+        <div className="flex gap-2">
+          {pill(mode === "select", () => (mode === "select" ? exitSelect() : setMode("select")), "Select", <PlusIcon className="size-3.5" />)}
+          {pill(mode === "edit", () => setMode(mode === "edit" ? "view" : "edit"), "Edit", <PencilIcon className="size-3.5" />)}
+        </div>
+      </div>
 
       {/* Day cards */}
       <motion.div

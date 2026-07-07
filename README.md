@@ -8,10 +8,13 @@ app refuses to let you lie to yourself.
 
 Full product spec: [docs/PRODUCT_SPEC.md](docs/PRODUCT_SPEC.md)
 
-## Status — Phase 1 (the loop) + Phase 2 (the hubs) are built
+## Status — Phase 1 + Phase 2 built; Phase 3 assists underway
 
-Per spec §16, Phase 1 is complete and all four Phase 2 hubs (Finance,
-Ideas Pool, Tutorials, Customize) are built:
+Per spec §16, Phase 1 (the loop) and all four Phase 2 hubs (Finance,
+Ideas Pool, Tutorials, Customize) are built, and the code-only Phase 3
+assists have landed (month view, schedule auto-plan, milestone
+animation). The two AI/OCR assists are scoped below, pending a provider
+decision:
 
 - **Auth** — GitHub OAuth (Auth.js v5). Sign-in doubles as connecting the
   handle that commit verification reads.
@@ -72,11 +75,32 @@ Ideas Pool, Tutorials, Customize) are built:
   code-side cosmetics theme presentation; the jsonb config is built to
   hold outfit packs later.
 
-**Phase 2 assists still deliberately unbuilt** (spec §16 Phase 3, all P1):
-receipt-scan OCR, the Ideas brainstorm agent, AI schedule autofill,
-Schedule month view, character animation/unlock economy. The
-`FinanceEntry.source/raw_text` seam, `Idea.source` field, and jsonb
-`users.cosmetics` are already in the schema for them.
+- **Schedule month view** (Phase 3, spec §8.4) — a Week ⇄ Month toggle
+  (URL-driven) opens a read-only overview of the whole program: each week
+  a row of day tiles showing planned hours, past days filling in with the
+  contribution tint, today ringed. Tap a week to edit it.
+
+- **Schedule auto-plan** (Phase 3, spec §9.4) — the Ideas Pool can fill
+  the plan's Project Work weeks from the pool in one tap, each idea sized
+  to its hours against the plan's project capacity (which scales with
+  intensity), capped so no single idea hogs more than a third of the
+  horizon. Honestly a deterministic packer, labelled "Auto-plan," not
+  "AI"; an LLM-ranked variant would build on the same server action.
+
+- **Milestone celebration** (Phase 3, spec §6.3/§6.5) — crossing a sparse
+  streak milestone (3/7/14/30/…) fires a one-time burst over the
+  character: an expanding glow, radiating sparks, and a frosted
+  "N day streak" card. Streak-loss keeps its slump portrait.
+
+**Still unbuilt — the two AI/OCR assists** (spec §16 Phase 3, P1; both are
+the spec's *blocking* open questions §15.4/§15.5): **receipt-scan OCR**
+(photo → amount + semantic category) and the **Ideas brainstorm agent**
+(chat that suggests valid, buildable ideas). Both need an external
+LLM/OCR provider, an API key, and per-call cost — a deliberate decision,
+not yet made. The `FinanceEntry.source/raw_text` seam, `Idea.source`
+field, and jsonb `users.cosmetics` already hold the schema seams. The
+character accessory/unlock *economy* stays parked (needs monetization,
+spec §10/§18).
 
 ## Running it
 
@@ -102,8 +126,8 @@ That's genuinely all for local dev:
 ```bash
 npm run lint       # eslint
 npm run typecheck  # tsc --noEmit
-npm test           # Vitest — schedule, verification, streak, finance/ideas/tutorials/cosmetics
-npm run test:e2e   # Playwright — the loop (mock GitHub API) + all four Phase 2 hubs
+npm test           # Vitest — schedule, verification, streak/finance/ideas/tutorials/cosmetics/autofill
+npm run test:e2e   # Playwright — the loop (mock GitHub API), the four hubs, month view + auto-plan
 ```
 
 The e2e suite boots its own dev server (own `.next-e2e` dist + `.pglite-e2e`
