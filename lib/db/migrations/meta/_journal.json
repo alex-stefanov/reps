@@ -29,6 +29,13 @@
       "when": 1783370514724,
       "tag": "0003_natural_ravenous",
       "breakpoints": true
+    },
+    {
+      "idx": 4,
+      "version": "7",
+      "when": 1783423254831,
+      "tag": "0004_next_hex",
+      "breakpoints": true
     }
   ]
 }
