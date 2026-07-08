@@ -2,6 +2,7 @@
 
 import { AnimatePresence, motion } from "framer-motion";
 import { useRef, useState, useTransition } from "react";
+import { useDialogFocus } from "@/lib/hooks/use-dialog-focus";
 import { IDEA_TYPE_LABELS, type IdeaType } from "@/lib/core/ideas";
 import {
   brainstorm,
@@ -47,6 +48,8 @@ export function BrainstormSheet({
   const [error, setError] = useState<string | null>(null);
   const [pending, startTransition] = useTransition();
   const scrollRef = useRef<HTMLDivElement>(null);
+  const dialogRef = useRef<HTMLDivElement>(null);
+  useDialogFocus(open, dialogRef, onClose);
 
   const send = () => {
     const text = input.trim();
@@ -102,13 +105,16 @@ export function BrainstormSheet({
             className="fixed inset-0 z-30 bg-text/30"
           />
           <motion.div
+            ref={dialogRef}
             role="dialog"
+            aria-modal="true"
             aria-label="Brainstorm with the agent"
+            tabIndex={-1}
             initial={{ y: "100%" }}
             animate={{ y: 0 }}
             exit={{ y: "100%" }}
             transition={{ type: "spring", stiffness: 320, damping: 32 }}
-            className="card-shadow-lg fixed inset-x-0 bottom-0 z-40 mx-auto flex max-h-[88dvh] max-w-md flex-col rounded-t-[2rem] bg-card"
+            className="card-shadow-lg fixed inset-x-0 bottom-0 z-40 mx-auto flex max-h-[88dvh] max-w-md flex-col rounded-t-[2rem] bg-card focus:outline-none"
           >
             <div className="shrink-0 px-6 pt-4">
               <div className="mx-auto h-1.5 w-10 rounded-full bg-hair-strong" />

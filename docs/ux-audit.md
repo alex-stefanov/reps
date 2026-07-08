@@ -68,7 +68,7 @@
 - **Recommended fix:** Add `app/manifest.ts` (name, short_name, theme/background color, maskable icons at 192/512), `app/apple-icon.png`, `app/icon.png`, and an `app/opengraph-image` (the idle portrait works). Wire `metadata.appleWebApp` and `metadata.openGraph`.
 - **Done when:** Lighthouse PWA "installable" passes, iOS "Add to Home Screen" shows a branded icon, and a pasted link renders an OG card.
 
-### [ ] UX-006 — Bottom-sheet dialogs have no focus management (trap, autofocus, Escape, restore)
+### [x] UX-006 — Bottom-sheet dialogs have no focus management (trap, autofocus, Escape, restore)
 - **Severity:** P2
 - **Category:** Accessibility & interaction
 - **Bar:** best-practice

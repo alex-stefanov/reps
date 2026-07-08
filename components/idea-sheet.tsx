@@ -2,7 +2,8 @@
 
 import { AnimatePresence, motion } from "framer-motion";
 import Link from "next/link";
-import { useState, useTransition } from "react";
+import { useRef, useState, useTransition } from "react";
+import { useDialogFocus } from "@/lib/hooks/use-dialog-focus";
 import { IDEA_TYPE_LABELS, IDEA_TYPES, type IdeaType } from "@/lib/core/ideas";
 import {
   deleteIdea,
@@ -25,6 +26,9 @@ export function IdeaSheet({
   plan: PlanContext | null;
   onClose: () => void;
 }) {
+  const dialogRef = useRef<HTMLDivElement>(null);
+  useDialogFocus(idea != null, dialogRef, onClose);
+
   return (
     <AnimatePresence>
       {idea && (
@@ -39,13 +43,16 @@ export function IdeaSheet({
             className="fixed inset-0 z-30 bg-text/30"
           />
           <motion.div
+            ref={dialogRef}
             role="dialog"
+            aria-modal="true"
             aria-label={idea.name}
+            tabIndex={-1}
             initial={{ y: "100%" }}
             animate={{ y: 0 }}
             exit={{ y: "100%" }}
             transition={{ type: "spring", stiffness: 320, damping: 32 }}
-            className="card-shadow-lg fixed inset-x-0 bottom-0 z-40 mx-auto max-h-[85dvh] max-w-md overflow-y-auto rounded-t-[2rem] bg-card p-6 pb-8"
+            className="card-shadow-lg fixed inset-x-0 bottom-0 z-40 mx-auto max-h-[85dvh] max-w-md overflow-y-auto rounded-t-[2rem] bg-card p-6 pb-8 focus:outline-none"
           >
             <SheetBody key={idea.id} idea={idea} plan={plan} onClose={onClose} />
           </motion.div>
