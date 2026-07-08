@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 import {
   checkCommitForDate,
+  fetchPublicEvents,
   findCommitForDate,
   type GitHubEvent,
 } from "@/lib/core/github-verify";
@@ -115,5 +116,18 @@ describe("checkCommitForDate", () => {
     };
     const result = await checkCommitForDate("alex", "2026-07-01", "UTC", failing);
     expect(result).toEqual({ status: "unavailable", httpStatus: 0 });
+  });
+
+  it("aborts a hung GitHub connection instead of stalling the render", async () => {
+    // A fetch that never resolves on its own — it only settles when the
+    // timeout AbortSignal fires. Proves the render path can't hang.
+    const hanging: typeof fetch = (_url, init) =>
+      new Promise((_resolve, reject) => {
+        init?.signal?.addEventListener("abort", () =>
+          reject(new DOMException("The operation timed out.", "TimeoutError")),
+        );
+      });
+    const result = await fetchPublicEvents("alex", hanging, 10);
+    expect(result).toEqual({ ok: false, status: 0 });
   });
 });

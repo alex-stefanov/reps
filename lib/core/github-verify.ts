@@ -54,14 +54,22 @@ export type EventsFetchResult =
   | { ok: false; status: number };
 
 /**
+ * Hard cap on the GitHub call. This runs in the Home render path, so a slow or
+ * hung connection must not stall the page — expiry aborts the fetch and lands
+ * in the "unavailable" branch (pending, never a fake answer).
+ */
+const GITHUB_FETCH_TIMEOUT_MS = 4000;
+
+/**
  * Fetches the user's recent public events. The base URL is overridable only
  * so tests can point at a mock server — production always hits github.com.
  * Unauthenticated calls are fine for one user (60 req/h); GITHUB_TOKEN
- * raises the limit if ever needed.
+ * raises the limit if ever needed. `timeoutMs` is injectable for tests.
  */
 export async function fetchPublicEvents(
   handle: string,
   fetchImpl: typeof fetch = fetch,
+  timeoutMs: number = GITHUB_FETCH_TIMEOUT_MS,
 ): Promise<EventsFetchResult> {
   const base = process.env.GITHUB_API_URL ?? "https://api.github.com";
   const headers: Record<string, string> = {
@@ -75,7 +83,7 @@ export async function fetchPublicEvents(
   try {
     const res = await fetchImpl(
       `${base}/users/${encodeURIComponent(handle)}/events/public?per_page=100`,
-      { headers, cache: "no-store" },
+      { headers, cache: "no-store", signal: AbortSignal.timeout(timeoutMs) },
     );
     if (!res.ok) return { ok: false, status: res.status };
 
@@ -83,8 +91,8 @@ export async function fetchPublicEvents(
     if (!Array.isArray(body)) return { ok: false, status: 502 };
     return { ok: true, events: body as GitHubEvent[] };
   } catch {
-    // Network-level failure (offline, DNS, timeout): verification becomes
-    // "unavailable" — it must never crash the loop or fake an answer.
+    // Network-level failure (offline, DNS, or the timeout abort above):
+    // verification becomes "unavailable" — never a crash or a faked answer.
     return { ok: false, status: 0 };
   }
 }

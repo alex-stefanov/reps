@@ -34,7 +34,7 @@
 - **Recommended fix:** Add an `app/error.tsx` (client component with a reset button) and an `app/global-error.tsx`; add `app/not-found.tsx`. Give at least Home/Finance/Schedule a friendly recover-and-retry state consistent with the Clay & Glass voice.
 - **Done when:** Forcing a thrown error in a page renders a styled, recoverable error state (not Next's default), and an unknown route renders a styled 404.
 
-### [ ] UX-003 — Home render blocks on the GitHub API with no timeout / abort
+### [x] UX-003 — Home render blocks on the GitHub API with no timeout / abort
 - **Severity:** P1
 - **Category:** Reliability & performance
 - **Bar:** best-practice
