@@ -190,4 +190,17 @@ describe("euro formatting and parsing", () => {
     expect(parseEuros("1.2.3")).toBeNull();
     expect(parseEuros("12.345")).toBeNull();
   });
+
+  it("parses grouped thousands (formatEuros output for €1,000+)", () => {
+    expect(parseEuros("1,299.00")).toBe(129_900);
+    expect(parseEuros("€1,000")).toBe(100_000);
+    expect(parseEuros("12,345.67")).toBe(1_234_567);
+    expect(parseEuros("1.299,00")).toBe(129_900); // decimal-comma locale
+  });
+
+  it("round-trips formatEuros → parseEuros so a scanned amount submits", () => {
+    for (const cents of [50, 12_50, 100_000, 1_234_567]) {
+      expect(parseEuros(formatEuros(cents))).toBe(cents);
+    }
+  });
 });

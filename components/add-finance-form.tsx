@@ -2,7 +2,6 @@
 
 import { motion } from "framer-motion";
 import { useMemo, useRef, useState, useTransition } from "react";
-import { formatEuros } from "@/lib/core/finance";
 import { addFinanceEntry } from "@/lib/server/finance-actions";
 import { scanReceipt } from "@/lib/server/receipt-actions";
 import type { FinanceDirection } from "@/lib/core/finance";
@@ -88,7 +87,9 @@ export function AddFinanceForm({
         return;
       }
       setDirection("spending");
-      if (result.amountCents != null) setAmount(formatEuros(result.amountCents).replace("€", ""));
+      // Prefill from cents directly — never round-trip through a localized
+      // currency string, whose comma grouping (€1,299.00) breaks parseEuros.
+      if (result.amountCents != null) setAmount((result.amountCents / 100).toFixed(2));
       if (result.categoryId) {
         setCategoryId(result.categoryId);
         setNewName("");

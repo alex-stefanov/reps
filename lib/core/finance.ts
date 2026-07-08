@@ -259,9 +259,28 @@ export function formatEuros(cents: number, opts?: { sign?: boolean }): string {
   return formatted;
 }
 
-/** Parses a user-typed euro amount ("12", "12.5", "12,50") into cents, or null. */
+/**
+ * Parses a user-typed euro amount into cents, or null. Handles a plain decimal
+ * ("12", "12.5"), a decimal comma ("12,50"), and grouped output round-tripped
+ * from formatEuros ("1,299.00", "€1,000") by stripping thousands separators.
+ */
 export function parseEuros(input: string): number | null {
-  const cleaned = input.trim().replace(/\s|€/g, "").replace(",", ".");
+  let cleaned = input.trim().replace(/[\s€]/g, "");
+  const hasComma = cleaned.includes(",");
+  const hasDot = cleaned.includes(".");
+  if (hasComma && hasDot) {
+    // The rightmost separator is the decimal point; the other groups thousands.
+    cleaned =
+      cleaned.lastIndexOf(",") > cleaned.lastIndexOf(".")
+        ? cleaned.replace(/\./g, "").replace(",", ".") // "1.299,00"
+        : cleaned.replace(/,/g, ""); // "1,299.00"
+  } else if (hasComma) {
+    // A lone comma with 1–2 trailing digits is a decimal ("12,50"); otherwise
+    // it groups thousands ("1,000", "1,234,567").
+    cleaned = /,\d{1,2}$/.test(cleaned)
+      ? cleaned.replace(",", ".")
+      : cleaned.replace(/,/g, "");
+  }
   if (!/^\d+(\.\d{1,2})?$/.test(cleaned)) return null;
   const cents = Math.round(Number(cleaned) * 100);
   if (!Number.isSafeInteger(cents) || cents <= 0) return null;

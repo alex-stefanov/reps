@@ -12,7 +12,7 @@
 
 ## Findings
 
-### [ ] UX-001 — Receipt scan prefills an amount that fails its own validation for totals ≥ €1,000
+### [x] UX-001 — Receipt scan prefills an amount that fails its own validation for totals ≥ €1,000
 - **Severity:** P1
 - **Category:** Reliability & error handling / Interaction
 - **Bar:** best-practice (the §7.4 receipt-scan feature is spec'd; this is a defect in it)
