@@ -90,7 +90,7 @@
 - **Recommended fix:** Add an explicit empty state to `finance-screen` / `finance-entries` (illustration or icon + one line + a prominent "Add your first entry" CTA), shown when the period has no entries.
 - **Done when:** Opening Finance with no entries shows a purposeful empty state with a clear primary action, not empty charts.
 
-### [ ] UX-008 — No route-level loading UI for data-backed navigations
+### [x] UX-008 — No route-level loading UI for data-backed navigations
 - **Severity:** P2
 - **Category:** Animation & motion / perceived performance
 - **Bar:** best-practice
