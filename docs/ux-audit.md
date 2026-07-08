@@ -79,7 +79,7 @@
 - **Recommended fix:** On open, focus the first field (brainstorm input) or the dialog; trap Tab within the sheet; close on Escape; restore focus to the opener on close. A small `useEffect`-based focus manager (or a headless dialog primitive) covers both sheets.
 - **Done when:** Opening a sheet moves focus in, Tab cycles only within it, Escape closes it, and focus returns to the trigger — verified with keyboard only.
 
-### [ ] UX-007 — Finance has no first-run empty state
+### [x] UX-007 — Finance has no first-run empty state
 - **Severity:** P2
 - **Category:** Visual & interface quality (empty state)
 - **Bar:** best-practice
