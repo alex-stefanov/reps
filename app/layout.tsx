@@ -1,5 +1,6 @@
 import type { Metadata, Viewport } from "next";
 import { Manrope } from "next/font/google";
+import { MotionProvider } from "@/components/motion-provider";
 import "./globals.css";
 
 const manrope = Manrope({
@@ -26,7 +27,7 @@ export default function RootLayout({
   return (
     <html lang="en" className={`${manrope.variable} h-full antialiased`}>
       <body className="min-h-full flex flex-col bg-base text-text font-sans">
-        {children}
+        <MotionProvider>{children}</MotionProvider>
       </body>
     </html>
   );

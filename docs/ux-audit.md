@@ -45,7 +45,7 @@
 - **Recommended fix:** Add an `AbortSignal.timeout(~4s)` (or `Promise.race`) around the GitHub fetch and treat expiry as `"unavailable"`; consider moving the on-open sync out of the render path (client-triggered after paint, or `after()`), so Home always renders instantly and verification resolves asynchronously.
 - **Done when:** Home renders within its budget even when GitHub is unreachable/slow, and a simulated hung GitHub response no longer stalls the page.
 
-### [ ] UX-004 — No `prefers-reduced-motion` handling in a motion-heavy app
+### [x] UX-004 — No `prefers-reduced-motion` handling in a motion-heavy app
 - **Severity:** P2
 - **Category:** Accessibility & motion
 - **Bar:** best-practice

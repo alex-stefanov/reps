@@ -121,6 +121,23 @@ body {
   animation: pulse-dot 1.8s ease-in-out infinite;
 }
 
+/*
+ * Reduce Motion: honor the OS setting. This neutralizes decorative CSS
+ * keyframe animations (breathing dot, refusal shake, skeleton pulse) and
+ * collapses transitions. Framer-motion is handled separately via
+ * <MotionConfig reducedMotion="user"> and useReducedMotion() in the character.
+ */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.001ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.001ms !important;
+    scroll-behavior: auto !important;
+  }
+}
+
 /* iOS switch */
 .ios-switch {
   appearance: none;
