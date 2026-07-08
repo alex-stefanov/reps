@@ -23,7 +23,7 @@
 - **Recommended fix:** Don't round-trip through a localized currency string. Prefill from cents directly (e.g. `(cents / 100).toFixed(2)`), or add a cents-based prefill path that bypasses `parseEuros`. Independently, make `parseEuros` robust: strip grouping separators before parsing (`replace(/,/g, "")` or Intl-aware parsing) rather than a single `.replace(",", ".")`.
 - **Done when:** Scanning a receipt whose total is ≥ €1,000 prefills a value that submits without error, and a unit test covers `formatEuros`→`parseEuros` round-trips across 0.5, 12.50, 1000, and 12345.67.
 
-### [ ] UX-002 — No error, not-found, or global-error boundaries anywhere in the app
+### [x] UX-002 — No error, not-found, or global-error boundaries anywhere in the app
 - **Severity:** P1
 - **Category:** Reliability & error handling
 - **Bar:** best-practice

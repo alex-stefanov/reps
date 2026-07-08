@@ -3,3 +3,4 @@
 One line per finding resolved from `docs/ux-audit.md`.
 
 UX-001 — Prefill scanned amount from cents (`(cents/100).toFixed(2)`) instead of round-tripping through `formatEuros`; hardened `parseEuros` to strip thousands separators; added round-trip + grouped-amount unit tests — `components/add-finance-form.tsx`, `lib/core/finance.ts`, `tests/unit/finance.test.ts` — verified ✅ (16 finance unit tests pass; typecheck/lint clean on changed files)
+UX-002 — Added route error boundary (retry), global-error boundary, and styled 404, all in the Clay & Glass voice with the character portraits — `app/error.tsx`, `app/global-error.tsx`, `app/not-found.tsx` — verified ✅ (dev server: unknown route renders the styled 404, a thrown page renders the recoverable error state with a working Try-again; lint + full typecheck clean)
