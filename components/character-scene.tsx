@@ -1,12 +1,15 @@
 "use client";
 
+import { AnimatePresence } from "framer-motion";
 import { useEffect, useRef, useState } from "react";
 import { ambianceById, DEFAULT_AMBIANCE_ID } from "@/lib/core/cosmetics";
+import { isStreakMilestone } from "@/lib/core/completion";
 import type { SceneDay } from "@/lib/server/home-view";
 import {
   CharacterPortrait,
   type AvatarState,
 } from "./character-portrait";
+import { MilestoneBurst } from "./milestone-burst";
 
 /**
  * The hero: the cinematic character portrait in a card, with the streak
@@ -69,6 +72,20 @@ export function CharacterScene({
     prevDone.current = doneCount;
   }, [doneCount]);
 
+  // Milestone burst: fire once when the streak *crosses into* a milestone
+  // (e.g. completing today takes you 6 → 7), not on every load at that count.
+  const [burst, setBurst] = useState<number | null>(null);
+  const prevStreak = useRef(streak);
+  useEffect(() => {
+    if (streak > prevStreak.current && isStreakMilestone(streak)) {
+      setBurst(streak);
+      const t = setTimeout(() => setBurst(null), 2600);
+      prevStreak.current = streak;
+      return () => clearTimeout(t);
+    }
+    prevStreak.current = streak;
+  }, [streak]);
+
   const state: AvatarState = flourishing ? "flourish" : baseState;
 
   return (
@@ -94,12 +111,15 @@ export function CharacterScene({
         )}
       </div>
 
-      <div className="h-[26rem]" data-avatar-state={state}>
+      <div className="relative h-[26rem]" data-avatar-state={state}>
         <CharacterPortrait
           state={state}
           commitVerified={commitVerified}
           ambianceId={ambianceId}
         />
+        <AnimatePresence>
+          {burst !== null && <MilestoneBurst key={burst} streak={burst} />}
+        </AnimatePresence>
       </div>
 
       {/* the week strip */}

@@ -3,11 +3,13 @@
 import { and, eq, gte, inArray, lt } from "drizzle-orm";
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
+import { planAutofill } from "@/lib/core/autofill";
+import { diffDaysISO, todayISO } from "@/lib/core/dates";
 import { parseIdeaInput } from "@/lib/core/ideas";
 import { getDb } from "@/lib/db/client";
 import { ideas, scheduleDays, scheduleTasks } from "@/lib/db/schema";
 import { requireUser } from "./current-user";
-import { getOwnedIdea } from "./ideas";
+import { getIdeas, getOwnedIdea } from "./ideas";
 import { getActiveProgram } from "./program";
 
 export interface IdeaFormInput {
@@ -154,4 +156,101 @@ export async function placeIdeaIntoSchedule(
   revalidatePath("/schedule");
   revalidatePath("/");
   return { placed: updated.length };
+}
+
+export interface AutofillResult {
+  error?: string;
+  /** Ideas placed into the plan. */
+  placed?: number;
+  /** Pool ideas that didn't fit in the remaining weeks. */
+  leftover?: number;
+  /** Program weeks that received a project this run. */
+  weeksFilled?: number;
+}
+
+/**
+ * Auto-plan the Project Work weeks from the pool (spec §9.4). Sizes each
+ * idea's run to its hours against the plan's project capacity — which itself
+ * scales with intensity — and fills from the current week forward, leaving
+ * completed history untouched. The user overrides afterward by re-placing or
+ * regenerating.
+ */
+export async function autofillProjectWeeks(): Promise<AutofillResult> {
+  const user = await requireUser();
+  const program = await getActiveProgram(user.id);
+  if (!program) return { error: "No active program to plan into." };
+
+  const pool = await getIdeas(user.id);
+  if (pool.length === 0) return { error: "Add ideas to the pool first." };
+
+  const db = await getDb();
+  const rows = await db
+    .select({
+      taskId: scheduleTasks.id,
+      weekIndex: scheduleDays.weekIndex,
+      hours: scheduleTasks.hours,
+    })
+    .from(scheduleTasks)
+    .innerJoin(scheduleDays, eq(scheduleTasks.scheduleDayId, scheduleDays.id))
+    .where(
+      and(
+        eq(scheduleDays.programId, program.id),
+        eq(scheduleTasks.track, "project"),
+      ),
+    );
+  if (rows.length === 0) {
+    return { error: "This plan has no Project Work sessions to fill." };
+  }
+
+  const projectHoursPerWeek =
+    rows.reduce((s, r) => s + r.hours, 0) / program.weeks;
+  const currentWeekIndex = Math.min(
+    Math.max(
+      Math.floor(diffDaysISO(program.startDate, todayISO(user.timezone)) / 7),
+      0,
+    ),
+    program.weeks - 1,
+  );
+
+  const plan = planAutofill({
+    ideas: pool.map((i) => ({ id: i.id, hours: i.hours })),
+    projectHoursPerWeek,
+    startWeekIndex: currentWeekIndex,
+    totalWeeks: program.weeks,
+    // No idea hogs more than a third of the horizon, so the pool spreads.
+    maxRunWeeks: Math.max(1, Math.floor(program.weeks / 3)),
+  });
+
+  const nameById = new Map(pool.map((i) => [i.id, i.name]));
+  const weekAssignment = new Map<number, string>(); // weekIndex → ideaId
+  for (const a of plan) {
+    for (let w = a.startWeekIndex; w < a.startWeekIndex + a.weekCount; w++) {
+      weekAssignment.set(w, a.ideaId);
+    }
+  }
+
+  const idsByIdea = new Map<string, string[]>();
+  for (const r of rows) {
+    const ideaId = weekAssignment.get(r.weekIndex);
+    if (!ideaId) continue;
+    const list = idsByIdea.get(ideaId);
+    if (list) list.push(r.taskId);
+    else idsByIdea.set(ideaId, [r.taskId]);
+  }
+
+  for (const [ideaId, taskIds] of idsByIdea) {
+    await db
+      .update(scheduleTasks)
+      .set({ ideaId, label: nameById.get(ideaId)! })
+      .where(inArray(scheduleTasks.id, taskIds));
+  }
+
+  revalidatePath("/ideas");
+  revalidatePath("/schedule");
+  revalidatePath("/");
+  return {
+    placed: plan.length,
+    leftover: pool.length - plan.length,
+    weeksFilled: weekAssignment.size,
+  };
 }

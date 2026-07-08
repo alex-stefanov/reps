@@ -2,6 +2,7 @@ import Link from "next/link";
 import { AddFinanceForm } from "@/components/add-finance-form";
 import { ChevronLeftIcon } from "@/components/icons";
 import { todayISO } from "@/lib/core/dates";
+import { isClaudeConfigured } from "@/lib/server/claude";
 import { requireUser } from "@/lib/server/current-user";
 import {
   ensureDefaultCategories,
@@ -36,6 +37,7 @@ export default async function AddFinancePage() {
           isDefault: c.userId === null,
         }))}
         today={todayISO(user.timezone)}
+        aiEnabled={isClaudeConfigured()}
       />
     </main>
   );

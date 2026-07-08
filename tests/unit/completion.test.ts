@@ -1,5 +1,9 @@
 import { describe, expect, it } from "vitest";
-import { computeStreak, contributionLevel } from "@/lib/core/completion";
+import {
+  computeStreak,
+  contributionLevel,
+  isStreakMilestone,
+} from "@/lib/core/completion";
 
 describe("contributionLevel", () => {
   it("maps done/total to GitHub-style levels 0–4", () => {
@@ -11,6 +15,18 @@ describe("contributionLevel", () => {
     expect(contributionLevel(4, 4)).toBe(4);
     expect(contributionLevel(1, 3)).toBe(2);
     expect(contributionLevel(3, 3)).toBe(4);
+  });
+});
+
+describe("isStreakMilestone", () => {
+  it("celebrates sparse milestones, not every day", () => {
+    expect(isStreakMilestone(3)).toBe(true);
+    expect(isStreakMilestone(7)).toBe(true);
+    expect(isStreakMilestone(30)).toBe(true);
+    expect(isStreakMilestone(1)).toBe(false);
+    expect(isStreakMilestone(5)).toBe(false);
+    expect(isStreakMilestone(8)).toBe(false);
+    expect(isStreakMilestone(0)).toBe(false);
   });
 });
 

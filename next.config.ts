@@ -8,6 +8,8 @@ const nextConfig: NextConfig = {
   // Next's one-dev-server-per-project lock out of the way.
   distDir: process.env.NEXT_DIST_DIR ?? ".next",
   allowedDevOrigins: ["127.0.0.1"],
+  // Receipt-scan images (base64) exceed the 1 MB server-action default.
+  experimental: { serverActions: { bodySizeLimit: "8mb" } },
 };
 
 export default nextConfig;

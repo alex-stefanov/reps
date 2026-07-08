@@ -1,19 +1,34 @@
 import { redirect } from "next/navigation";
+import { MonthOverview } from "@/components/month-overview";
 import { ScheduleScreen } from "@/components/schedule-screen";
 import { requireUser } from "@/lib/server/current-user";
 import { getActiveProgram } from "@/lib/server/program";
-import { getWeekView } from "@/lib/server/schedule-view";
+import { getMonthView, getWeekView } from "@/lib/server/schedule-view";
 
 export default async function SchedulePage({
   searchParams,
 }: {
-  searchParams: Promise<{ w?: string }>;
+  searchParams: Promise<{ w?: string; v?: string }>;
 }) {
   const user = await requireUser();
   const program = await getActiveProgram(user.id);
   if (!program) redirect("/onboarding");
 
-  const { w } = await searchParams;
+  const { w, v } = await searchParams;
+
+  if (v === "month") {
+    const month = await getMonthView(user, program);
+    return (
+      <main className="mx-auto w-full max-w-4xl flex-1 px-4 py-6 md:px-8">
+        <MonthOverview
+          month={month}
+          hoursPerWeek={program.hoursPerWeek}
+          intensity={program.intensity}
+        />
+      </main>
+    );
+  }
+
   const requested = w === undefined ? undefined : Number(w);
   const week = await getWeekView(
     user,
