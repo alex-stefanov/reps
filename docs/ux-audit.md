@@ -57,7 +57,7 @@
 - **Done when:** With OS Reduce Motion on, the character is static, decorative loops stop, and interactions cross-fade instead of spring — verified at runtime. `[verify-at-runtime]`
 - **Verify at runtime:** yes — the rendered motion needs eyes.
 
-### [ ] UX-005 — Missing installable-app assets and social/branding metadata
+### [x] UX-005 — Missing installable-app assets and social/branding metadata
 - **Severity:** P2
 - **Category:** Assets & branding
 - **Bar:** best-practice
