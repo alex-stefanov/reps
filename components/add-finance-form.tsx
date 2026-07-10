@@ -48,7 +48,8 @@ export function AddFinanceForm({
 
   const [scanning, setScanning] = useState(false);
   const [scanNote, setScanNote] = useState<string | null>(null);
-  const scannedRef = useRef<string | null>(null); // merchant, for provenance
+  const scannedRef = useRef(false); // did a receipt scan seed this entry?
+  const merchantRef = useRef<string | null>(null); // merchant text, for rawText
   const fileRef = useRef<HTMLInputElement>(null);
 
   const options = useMemo(
@@ -67,8 +68,8 @@ export function AddFinanceForm({
         categoryId: isNew ? null : selected,
         newCategoryName: isNew ? newName : null,
         occurredOn,
-        source: scannedRef.current !== null ? "receipt" : "manual",
-        rawText: scannedRef.current,
+        source: scannedRef.current ? "receipt" : "manual",
+        rawText: merchantRef.current,
       });
       // On success the action redirects; only errors return.
       if (result?.error) setError(result.error);
@@ -97,7 +98,8 @@ export function AddFinanceForm({
         setCategoryId(NEW_TYPE);
         setNewName(result.categoryName);
       }
-      scannedRef.current = result.merchant ?? "";
+      scannedRef.current = true;
+      merchantRef.current = result.merchant ?? null;
       setScanNote(
         `Read ${result.categoryName ?? "an entry"} — check it and add.`,
       );
@@ -133,6 +135,9 @@ export function AddFinanceForm({
               setDirection(d);
               setCategoryId("");
               setNewName("");
+              // Manual direction change → this is a hand-built entry, not a scan.
+              scannedRef.current = false;
+              merchantRef.current = null;
             }}
             className={`relative flex-1 rounded-xl py-2.5 text-sm font-bold capitalize transition-colors ${
               direction === d ? "text-text" : "text-sub hover:text-text"

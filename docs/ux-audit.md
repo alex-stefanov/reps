@@ -112,7 +112,7 @@
 - **Recommended fix:** Add `thinking: { type: "adaptive" }` (optionally `output_config.effort`) to the brainstorm `structuredCall`; the receipt extraction can stay thinking-off. Set a sensible per-request timeout (e.g. `client.messages.create({...}, { timeout: 30_000 })`) so failures surface promptly as the existing "agent is unavailable" error.
 - **Done when:** Brainstorm calls run with adaptive thinking, and a stalled API call fails fast into the existing error branch instead of hanging on the spinner.
 
-### [ ] UX-010 — Low-priority polish and consistency nits (grouped)
+### [x] UX-010 — Low-priority polish and consistency nits (grouped)
 - **Severity:** P3
 - **Category:** Consistency / polish
 - **Bar:** best-practice
