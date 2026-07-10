@@ -125,7 +125,10 @@ export async function brainstorm(
         },
       ],
       schema: SCHEMA,
-      maxTokens: 1536,
+      // Adaptive thinking lifts suggestion quality (spec §9.3: buildable,
+      // never filler); it shares the budget, so give the JSON headroom.
+      thinking: true,
+      maxTokens: 4096,
     });
   } catch {
     return { error: "The agent is unavailable right now — try again in a moment." };

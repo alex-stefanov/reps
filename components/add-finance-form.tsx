@@ -2,7 +2,6 @@
 
 import { motion } from "framer-motion";
 import { useMemo, useRef, useState, useTransition } from "react";
-import { formatEuros } from "@/lib/core/finance";
 import { addFinanceEntry } from "@/lib/server/finance-actions";
 import { scanReceipt } from "@/lib/server/receipt-actions";
 import type { FinanceDirection } from "@/lib/core/finance";
@@ -49,7 +48,8 @@ export function AddFinanceForm({
 
   const [scanning, setScanning] = useState(false);
   const [scanNote, setScanNote] = useState<string | null>(null);
-  const scannedRef = useRef<string | null>(null); // merchant, for provenance
+  const scannedRef = useRef(false); // did a receipt scan seed this entry?
+  const merchantRef = useRef<string | null>(null); // merchant text, for rawText
   const fileRef = useRef<HTMLInputElement>(null);
 
   const options = useMemo(
@@ -68,8 +68,8 @@ export function AddFinanceForm({
         categoryId: isNew ? null : selected,
         newCategoryName: isNew ? newName : null,
         occurredOn,
-        source: scannedRef.current !== null ? "receipt" : "manual",
-        rawText: scannedRef.current,
+        source: scannedRef.current ? "receipt" : "manual",
+        rawText: merchantRef.current,
       });
       // On success the action redirects; only errors return.
       if (result?.error) setError(result.error);
@@ -88,7 +88,9 @@ export function AddFinanceForm({
         return;
       }
       setDirection("spending");
-      if (result.amountCents != null) setAmount(formatEuros(result.amountCents).replace("€", ""));
+      // Prefill from cents directly — never round-trip through a localized
+      // currency string, whose comma grouping (€1,299.00) breaks parseEuros.
+      if (result.amountCents != null) setAmount((result.amountCents / 100).toFixed(2));
       if (result.categoryId) {
         setCategoryId(result.categoryId);
         setNewName("");
@@ -96,7 +98,8 @@ export function AddFinanceForm({
         setCategoryId(NEW_TYPE);
         setNewName(result.categoryName);
       }
-      scannedRef.current = result.merchant ?? "";
+      scannedRef.current = true;
+      merchantRef.current = result.merchant ?? null;
       setScanNote(
         `Read ${result.categoryName ?? "an entry"} — check it and add.`,
       );
@@ -132,6 +135,9 @@ export function AddFinanceForm({
               setDirection(d);
               setCategoryId("");
               setNewName("");
+              // Manual direction change → this is a hand-built entry, not a scan.
+              scannedRef.current = false;
+              merchantRef.current = null;
             }}
             className={`relative flex-1 rounded-xl py-2.5 text-sm font-bold capitalize transition-colors ${
               direction === d ? "text-text" : "text-sub hover:text-text"

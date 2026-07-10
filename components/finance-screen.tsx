@@ -1,6 +1,7 @@
 "use client";
 
 import { AnimatePresence, motion } from "framer-motion";
+import Link from "next/link";
 import { useMemo, useState } from "react";
 import { addDaysISO } from "@/lib/core/dates";
 import {
@@ -13,7 +14,7 @@ import {
   type Period,
   type PeriodKind,
 } from "@/lib/core/finance";
-import { ChevronLeftIcon, ChevronRightIcon } from "./icons";
+import { ChevronLeftIcon, ChevronRightIcon, CoinIcon, PlusIcon } from "./icons";
 import { BreakdownChart, TotalsChart } from "./finance-charts";
 import { FinanceEntryList } from "./finance-entries";
 import { FinanceSankey } from "./finance-sankey";
@@ -100,6 +101,36 @@ export function FinanceScreen({
     setKind(next);
     setOffset(0);
   };
+
+  // First-run empty state (spec §7): no entries anywhere yet — invite the
+  // first action instead of rendering empty charts and a blank Sankey.
+  if (entries.length === 0) {
+    return (
+      <div
+        data-testid="finance-empty"
+        className="mt-10 flex flex-col items-center text-center"
+      >
+        <span className="flex size-16 items-center justify-center rounded-[1.4rem] bg-accent-soft text-accent-deep">
+          <CoinIcon className="size-8" />
+        </span>
+        <h2 className="mt-5 text-lg font-extrabold tracking-tight text-text">
+          Start your ledger
+        </h2>
+        <p className="mt-2 max-w-[30ch] text-[14px] leading-relaxed text-sub">
+          Log your first income or spend and the charts fill in — watch the
+          line go up.
+        </p>
+        <Link
+          href="/finance/add"
+          data-testid="finance-empty-cta"
+          className="card-shadow mt-6 inline-flex items-center gap-2 rounded-2xl bg-accent px-6 py-3.5 text-[15px] font-extrabold text-white transition-colors hover:bg-accent-deep active:scale-[0.98]"
+        >
+          <PlusIcon className="size-4.5" />
+          Add your first entry
+        </Link>
+      </div>
+    );
+  }
 
   return (
     <div className="mt-6">

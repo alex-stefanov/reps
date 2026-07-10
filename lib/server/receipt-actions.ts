@@ -65,8 +65,9 @@ export async function scanReceipt(input: {
     return { error: "That image format isn't supported — try a JPEG or PNG." };
   }
   const mediaType = input.mediaType as ImageMediaType;
-  // base64 is ~4/3 the byte size; reject oversized before spending a call.
-  if (input.imageBase64.length > MAX_IMAGE_BYTES * 1.4) {
+  // base64 encodes 3 bytes per 4 chars; decode to real bytes so the gate
+  // matches the "under 5 MB" copy rather than allowing ~5.5 MB through.
+  if (input.imageBase64.length * 0.75 > MAX_IMAGE_BYTES) {
     return { error: "That image is too large — under 5 MB, please." };
   }
 

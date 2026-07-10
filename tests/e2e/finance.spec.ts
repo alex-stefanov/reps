@@ -38,7 +38,7 @@ async function addEntry(
 }
 
 test.describe.serial("the finance hub", () => {
-  test("first open: onboard, then the hub shows seeded state, all zeros", async ({
+  test("first open: onboard, then the hub shows the empty state", async ({
     page,
   }) => {
     await signIn(page);
@@ -49,9 +49,12 @@ test.describe.serial("the finance hub", () => {
       timeout: 20_000,
     });
 
+    // A user with no entries yet sees the first-run empty state (UX-007),
+    // not empty charts — with a clear "add your first entry" action.
     await page.goto("/finance");
-    await expect(page.getByTestId("total-income")).toHaveText("€0");
-    await expect(page.getByTestId("total-spending")).toHaveText("€0");
+    await expect(page.getByTestId("finance-empty")).toBeVisible();
+    await expect(page.getByTestId("finance-empty-cta")).toBeVisible();
+    await expect(page.getByTestId("total-income")).toHaveCount(0);
     // Seeded default categories exist in the Add form's dropdown.
     await page.goto("/finance/add");
     const options = page.getByTestId("category-select").locator("option");

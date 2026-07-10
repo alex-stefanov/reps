@@ -12,7 +12,7 @@
 
 ## Findings
 
-### [ ] UX-001 — Receipt scan prefills an amount that fails its own validation for totals ≥ €1,000
+### [x] UX-001 — Receipt scan prefills an amount that fails its own validation for totals ≥ €1,000
 - **Severity:** P1
 - **Category:** Reliability & error handling / Interaction
 - **Bar:** best-practice (the §7.4 receipt-scan feature is spec'd; this is a defect in it)
@@ -23,7 +23,7 @@
 - **Recommended fix:** Don't round-trip through a localized currency string. Prefill from cents directly (e.g. `(cents / 100).toFixed(2)`), or add a cents-based prefill path that bypasses `parseEuros`. Independently, make `parseEuros` robust: strip grouping separators before parsing (`replace(/,/g, "")` or Intl-aware parsing) rather than a single `.replace(",", ".")`.
 - **Done when:** Scanning a receipt whose total is ≥ €1,000 prefills a value that submits without error, and a unit test covers `formatEuros`→`parseEuros` round-trips across 0.5, 12.50, 1000, and 12345.67.
 
-### [ ] UX-002 — No error, not-found, or global-error boundaries anywhere in the app
+### [x] UX-002 — No error, not-found, or global-error boundaries anywhere in the app
 - **Severity:** P1
 - **Category:** Reliability & error handling
 - **Bar:** best-practice
@@ -34,7 +34,7 @@
 - **Recommended fix:** Add an `app/error.tsx` (client component with a reset button) and an `app/global-error.tsx`; add `app/not-found.tsx`. Give at least Home/Finance/Schedule a friendly recover-and-retry state consistent with the Clay & Glass voice.
 - **Done when:** Forcing a thrown error in a page renders a styled, recoverable error state (not Next's default), and an unknown route renders a styled 404.
 
-### [ ] UX-003 — Home render blocks on the GitHub API with no timeout / abort
+### [x] UX-003 — Home render blocks on the GitHub API with no timeout / abort
 - **Severity:** P1
 - **Category:** Reliability & performance
 - **Bar:** best-practice
@@ -45,7 +45,7 @@
 - **Recommended fix:** Add an `AbortSignal.timeout(~4s)` (or `Promise.race`) around the GitHub fetch and treat expiry as `"unavailable"`; consider moving the on-open sync out of the render path (client-triggered after paint, or `after()`), so Home always renders instantly and verification resolves asynchronously.
 - **Done when:** Home renders within its budget even when GitHub is unreachable/slow, and a simulated hung GitHub response no longer stalls the page.
 
-### [ ] UX-004 — No `prefers-reduced-motion` handling in a motion-heavy app
+### [x] UX-004 — No `prefers-reduced-motion` handling in a motion-heavy app
 - **Severity:** P2
 - **Category:** Accessibility & motion
 - **Bar:** best-practice
@@ -57,7 +57,7 @@
 - **Done when:** With OS Reduce Motion on, the character is static, decorative loops stop, and interactions cross-fade instead of spring — verified at runtime. `[verify-at-runtime]`
 - **Verify at runtime:** yes — the rendered motion needs eyes.
 
-### [ ] UX-005 — Missing installable-app assets and social/branding metadata
+### [x] UX-005 — Missing installable-app assets and social/branding metadata
 - **Severity:** P2
 - **Category:** Assets & branding
 - **Bar:** best-practice
@@ -68,7 +68,7 @@
 - **Recommended fix:** Add `app/manifest.ts` (name, short_name, theme/background color, maskable icons at 192/512), `app/apple-icon.png`, `app/icon.png`, and an `app/opengraph-image` (the idle portrait works). Wire `metadata.appleWebApp` and `metadata.openGraph`.
 - **Done when:** Lighthouse PWA "installable" passes, iOS "Add to Home Screen" shows a branded icon, and a pasted link renders an OG card.
 
-### [ ] UX-006 — Bottom-sheet dialogs have no focus management (trap, autofocus, Escape, restore)
+### [x] UX-006 — Bottom-sheet dialogs have no focus management (trap, autofocus, Escape, restore)
 - **Severity:** P2
 - **Category:** Accessibility & interaction
 - **Bar:** best-practice
@@ -79,7 +79,7 @@
 - **Recommended fix:** On open, focus the first field (brainstorm input) or the dialog; trap Tab within the sheet; close on Escape; restore focus to the opener on close. A small `useEffect`-based focus manager (or a headless dialog primitive) covers both sheets.
 - **Done when:** Opening a sheet moves focus in, Tab cycles only within it, Escape closes it, and focus returns to the trigger — verified with keyboard only.
 
-### [ ] UX-007 — Finance has no first-run empty state
+### [x] UX-007 — Finance has no first-run empty state
 - **Severity:** P2
 - **Category:** Visual & interface quality (empty state)
 - **Bar:** best-practice
@@ -90,7 +90,7 @@
 - **Recommended fix:** Add an explicit empty state to `finance-screen` / `finance-entries` (illustration or icon + one line + a prominent "Add your first entry" CTA), shown when the period has no entries.
 - **Done when:** Opening Finance with no entries shows a purposeful empty state with a clear primary action, not empty charts.
 
-### [ ] UX-008 — No route-level loading UI for data-backed navigations
+### [x] UX-008 — No route-level loading UI for data-backed navigations
 - **Severity:** P2
 - **Category:** Animation & motion / perceived performance
 - **Bar:** best-practice
@@ -101,7 +101,7 @@
 - **Recommended fix:** Add `loading.tsx` skeletons for at least `/finance`, `/schedule`, `/ideas`, `/tutorials` matching each screen's card layout.
 - **Done when:** Slow-network navigation to each hub shows a skeleton immediately, then content. `[verify-at-runtime]`
 
-### [ ] UX-009 — Brainstorm agent omits adaptive thinking; AI calls set no client timeout
+### [x] UX-009 — Brainstorm agent omits adaptive thinking; AI calls set no client timeout
 - **Severity:** P2
 - **Category:** AI integration quality
 - **Bar:** best-practice (per the `claude-api` skill)
@@ -112,7 +112,7 @@
 - **Recommended fix:** Add `thinking: { type: "adaptive" }` (optionally `output_config.effort`) to the brainstorm `structuredCall`; the receipt extraction can stay thinking-off. Set a sensible per-request timeout (e.g. `client.messages.create({...}, { timeout: 30_000 })`) so failures surface promptly as the existing "agent is unavailable" error.
 - **Done when:** Brainstorm calls run with adaptive thinking, and a stalled API call fails fast into the existing error branch instead of hanging on the spinner.
 
-### [ ] UX-010 — Low-priority polish and consistency nits (grouped)
+### [x] UX-010 — Low-priority polish and consistency nits (grouped)
 - **Severity:** P3
 - **Category:** Consistency / polish
 - **Bar:** best-practice

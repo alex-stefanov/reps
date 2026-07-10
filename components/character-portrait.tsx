@@ -1,6 +1,12 @@
 "use client";
 
-import { motion, useMotionValue, useSpring, useTransform } from "framer-motion";
+import {
+  motion,
+  useMotionValue,
+  useReducedMotion,
+  useSpring,
+  useTransform,
+} from "framer-motion";
 import Image from "next/image";
 import { useEffect, useRef, useState } from "react";
 import { ambianceById, DEFAULT_AMBIANCE_ID } from "@/lib/core/cosmetics";
@@ -47,12 +53,13 @@ export function CharacterPortrait({
   ambianceId?: string;
 }) {
   const ambiance = ambianceById(ambianceId);
+  const reduce = useReducedMotion();
   const [overlay, setOverlay] = useState<"wink" | "blink" | null>(null);
   const winkTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   // Idle fidget: every so often he pockets his hands and closes his eyes.
   useEffect(() => {
-    if (state !== "idle") return;
+    if (state !== "idle" || reduce) return;
     let alive = true;
     let timer: ReturnType<typeof setTimeout>;
     const loop = (delay: number) => {
@@ -73,7 +80,7 @@ export function CharacterPortrait({
       clearTimeout(timer);
       setOverlay(null);
     };
-  }, [state]);
+  }, [state, reduce]);
 
   const triggerWink = () => {
     if (state !== "idle" && state !== "celebrate") return;
@@ -109,15 +116,24 @@ export function CharacterPortrait({
       aria-label={`${ALT[shown]} — tap to say hi`}
       className="relative block h-full w-full cursor-pointer overflow-hidden focus:outline-none"
       onClick={triggerWink}
-      onPointerMove={(e) => {
-        const r = e.currentTarget.getBoundingClientRect();
-        mx.set(((e.clientX - r.left) / r.width - 0.5) * 2);
-        my.set(((e.clientY - r.top) / r.height - 0.5) * 2);
-      }}
-      onPointerLeave={() => {
-        mx.set(0);
-        my.set(0);
-      }}
+      // Reduce Motion: no pointer parallax — the figure stays put.
+      onPointerMove={
+        reduce
+          ? undefined
+          : (e) => {
+              const r = e.currentTarget.getBoundingClientRect();
+              mx.set(((e.clientX - r.left) / r.width - 0.5) * 2);
+              my.set(((e.clientY - r.top) / r.height - 0.5) * 2);
+            }
+      }
+      onPointerLeave={
+        reduce
+          ? undefined
+          : () => {
+              mx.set(0);
+              my.set(0);
+            }
+      }
     >
       {/* ambient backdrop: the portrait itself, blown up and blurred */}
       <motion.div className="absolute inset-0" style={{ x: bgX }}>
@@ -158,12 +174,17 @@ export function CharacterPortrait({
         )}
       </motion.div>
 
-      {/* the figure, breathing */}
+      {/* the figure, breathing — frozen under Reduce Motion */}
       <motion.div
+        data-testid="character-figure"
         className="absolute inset-0 origin-bottom"
         style={{ x: fgX, y: fgY, rotateZ: tilt }}
-        animate={{ scaleY: [1, 1.006, 1] }}
-        transition={{ duration: 3.6, repeat: Infinity, ease: "easeInOut" }}
+        animate={reduce ? undefined : { scaleY: [1, 1.006, 1] }}
+        transition={
+          reduce
+            ? undefined
+            : { duration: 3.6, repeat: Infinity, ease: "easeInOut" }
+        }
       >
         {ALL_STATES.map((s) => (
           <motion.div
