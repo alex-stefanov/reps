@@ -101,7 +101,7 @@
 - **Recommended fix:** Add `loading.tsx` skeletons for at least `/finance`, `/schedule`, `/ideas`, `/tutorials` matching each screen's card layout.
 - **Done when:** Slow-network navigation to each hub shows a skeleton immediately, then content. `[verify-at-runtime]`
 
-### [ ] UX-009 — Brainstorm agent omits adaptive thinking; AI calls set no client timeout
+### [x] UX-009 — Brainstorm agent omits adaptive thinking; AI calls set no client timeout
 - **Severity:** P2
 - **Category:** AI integration quality
 - **Bar:** best-practice (per the `claude-api` skill)
