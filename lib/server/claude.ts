@@ -9,6 +9,16 @@
  */
 export const CLAUDE_MODEL = "claude-opus-4-8";
 
+/**
+ * These assists are interactive — a user is watching "Reading receipt…". The
+ * SDK defaults (10-min timeout, 2 retries) would hang the UI for minutes if the
+ * API stalls; bound it so a stuck upstream surfaces as an error the caller can
+ * show. A single structured call to Opus returns in seconds, so 30s is ample;
+ * one retry covers a transient 429/5xx without unbounding the worst case (~60s).
+ */
+const CALL_TIMEOUT_MS = 30_000;
+const CALL_MAX_RETRIES = 1;
+
 export function isClaudeConfigured(): boolean {
   return Boolean(process.env.ANTHROPIC_API_KEY);
 }
@@ -54,13 +64,16 @@ export async function structuredCall<T = unknown>(opts: {
   maxTokens: number;
 }): Promise<T> {
   const client = await getClaude();
-  const message = await client.messages.create({
-    model: CLAUDE_MODEL,
-    max_tokens: opts.maxTokens,
-    system: opts.system,
-    output_config: { format: { type: "json_schema", schema: opts.schema } },
-    messages: [{ role: "user", content: opts.content }],
-  });
+  const message = await client.messages.create(
+    {
+      model: CLAUDE_MODEL,
+      max_tokens: opts.maxTokens,
+      system: opts.system,
+      output_config: { format: { type: "json_schema", schema: opts.schema } },
+      messages: [{ role: "user", content: opts.content }],
+    },
+    { timeout: CALL_TIMEOUT_MS, maxRetries: CALL_MAX_RETRIES },
+  );
 
   // A refusal (or any non-text stop) yields no JSON — surface it as such.
   if (message.stop_reason === "refusal") {
